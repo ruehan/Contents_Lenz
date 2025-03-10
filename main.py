@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import sys
 import os
 import argparse
 from PyQt6.QtWidgets import QApplication
 from src.ui.main_window import MainWindow
-from src.config import create_required_directories
+from src.config import create_required_directories, SUPPORTED_LANGUAGES
 from src.models.openai_client import OpenAIClient
 from src.utils.file_handler import FileHandler
 
@@ -17,6 +20,7 @@ def main():
     parser.add_argument('--output', type=str, help='요약 결과를 저장할 파일 경로')
     parser.add_argument('--length', type=str, choices=['short', 'medium', 'long'], default='medium', help='요약 길이 (short, medium, long)')
     parser.add_argument('--format', type=str, choices=['bullet', 'paragraph', 'structured'], default='paragraph', help='요약 형식 (bullet, paragraph, structured)')
+    parser.add_argument('--language', type=str, choices=list(SUPPORTED_LANGUAGES.keys()), default='auto', help='요약 결과 언어 (auto, ko, en, ja, zh 등)')
     
     args = parser.parse_args()
     
@@ -50,8 +54,13 @@ def main():
             
             client = OpenAIClient()
             
+            if args.language == 'auto':
+                print("텍스트 언어 감지 중...")
+                detected_language = client.detect_language(input_text)
+                print(f"감지된 언어: {SUPPORTED_LANGUAGES.get(detected_language, detected_language)}")
+            
             print("텍스트 요약 중...")
-            summary = client.summarize_text(input_text, args.length, args.format)
+            summary = client.summarize_text(input_text, args.length, args.format, args.language)
             
             if args.output:
                 output_path = args.output

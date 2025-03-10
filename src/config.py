@@ -41,6 +41,25 @@ SUMMARY_FORMATS = {
     "structured": "구조화된 형식(제목, 소제목 등)의 요약"
 }
 
+# 지원 언어 설정
+SUPPORTED_LANGUAGES = {
+    "auto": "자동 감지 (원본 언어로 요약)",
+    "ko": "한국어",
+    "en": "영어 (English)",
+    "ja": "일본어 (日本語)",
+    "zh": "중국어 (简体中文)",
+    "es": "스페인어 (Español)",
+    "fr": "프랑스어 (Français)",
+    "de": "독일어 (Deutsch)",
+    "ru": "러시아어 (Русский)",
+    "pt": "포르투갈어 (Português)",
+    "it": "이탈리아어 (Italiano)",
+    "nl": "네덜란드어 (Nederlands)",
+    "ar": "아랍어 (العربية)",
+    "hi": "힌디어 (हिन्दी)",
+    "vi": "베트남어 (Tiếng Việt)"
+}
+
 # 파일 형식 설정
 SUPPORTED_TEXT_FORMATS = [".txt", ".md", ".html"]
 SUPPORTED_DOCUMENT_FORMATS = [".pdf", ".docx", ".doc"]

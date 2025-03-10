@@ -12,7 +12,7 @@ from src.config import (
     APP_NAME, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, 
     DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, SUMMARY_LENGTHS, 
     SUMMARY_FORMATS, SUPPORTED_TEXT_FORMATS, SUPPORTED_DOCUMENT_FORMATS,
-    SUPPORTED_OUTPUT_FORMATS
+    SUPPORTED_OUTPUT_FORMATS, SUPPORTED_LANGUAGES
 )
 from src.models.openai_client import OpenAIClient
 from src.utils.file_handler import FileHandler
@@ -23,16 +23,17 @@ class SummarizeThread(QThread):
     finished = pyqtSignal(str)  # 요약 완료 시그널
     error = pyqtSignal(str)     # 오류 발생 시그널
     
-    def __init__(self, text, length, format):
+    def __init__(self, text, length, format, language="auto"):
         super().__init__()
         self.text = text
         self.length = length
         self.format = format
+        self.language = language
         self.client = OpenAIClient()
     
     def run(self):
         try:
-            summary = self.client.summarize_text(self.text, self.length, self.format)
+            summary = self.client.summarize_text(self.text, self.length, self.format, self.language)
             self.finished.emit(summary)
         except Exception as e:
             self.error.emit(str(e))
@@ -91,6 +92,19 @@ class MainWindow(QMainWindow):
         text_input_layout.addWidget(text_input_label)
         text_input_layout.addWidget(self.text_input)
         
+        # 언어 감지 버튼
+        self.detect_language_button = QPushButton("언어 감지")
+        self.detect_language_button.clicked.connect(self.detect_language)
+        self.detected_language_label = QLabel("")
+        self.detected_language_label.setStyleSheet("color: #3498db; font-style: italic;")
+        
+        detect_language_layout = QHBoxLayout()
+        detect_language_layout.addWidget(self.detect_language_button)
+        detect_language_layout.addWidget(self.detected_language_label)
+        detect_language_layout.addStretch()
+        
+        text_input_layout.addLayout(detect_language_layout)
+        
         input_tabs.addTab(text_input_widget, "텍스트 입력")
         
         # 파일 업로드 탭
@@ -130,10 +144,18 @@ class MainWindow(QMainWindow):
         for key, value in SUMMARY_FORMATS.items():
             self.format_combo.addItem(value, key)
         
+        # 언어 선택
+        language_label = QLabel("출력 언어:")
+        self.language_combo = QComboBox()
+        for key, value in SUPPORTED_LANGUAGES.items():
+            self.language_combo.addItem(value, key)
+        
         options_layout.addWidget(length_label)
         options_layout.addWidget(self.length_combo)
         options_layout.addWidget(format_label)
         options_layout.addWidget(self.format_combo)
+        options_layout.addWidget(language_label)
+        options_layout.addWidget(self.language_combo)
         
         input_layout.addLayout(options_layout)
         
@@ -172,6 +194,52 @@ class MainWindow(QMainWindow):
         
         # 상태 표시줄
         self.statusBar().showMessage("준비")
+    
+    def detect_language(self):
+        """텍스트 언어 감지"""
+        # OpenAI 클라이언트 확인
+        if not self.openai_client:
+            try:
+                self.openai_client = OpenAIClient()
+            except ValueError as e:
+                QMessageBox.warning(self, "API 키 오류", str(e))
+                return
+        
+        # 입력 텍스트 가져오기
+        text = self.text_input.toPlainText().strip()
+        if not text:
+            QMessageBox.warning(self, "입력 오류", "언어를 감지할 텍스트를 입력하세요.")
+            return
+        
+        # UI 상태 업데이트
+        self.detect_language_button.setEnabled(False)
+        self.detected_language_label.setText("언어 감지 중...")
+        self.statusBar().showMessage("언어 감지 중...")
+        
+        try:
+            # 언어 감지
+            detected_language = self.openai_client.detect_language(text)
+            language_name = SUPPORTED_LANGUAGES.get(detected_language, detected_language)
+            
+            # 결과 표시
+            self.detected_language_label.setText(f"감지된 언어: {language_name} ({detected_language})")
+            
+            # 언어 선택 콤보박스 업데이트 (자동 모드인 경우)
+            if self.language_combo.currentData() == "auto":
+                for i in range(self.language_combo.count()):
+                    if self.language_combo.itemData(i) == detected_language:
+                        self.language_combo.setCurrentIndex(i)
+                        break
+            
+            self.statusBar().showMessage(f"언어 감지 완료: {language_name}", 3000)
+        
+        except Exception as e:
+            QMessageBox.critical(self, "언어 감지 오류", str(e))
+            self.detected_language_label.setText("")
+            self.statusBar().showMessage("언어 감지 실패", 3000)
+        
+        finally:
+            self.detect_language_button.setEnabled(True)
     
     def browse_file(self):
         """파일 선택 대화상자 표시"""
@@ -224,6 +292,7 @@ class MainWindow(QMainWindow):
         # 요약 옵션 가져오기
         length = self.length_combo.currentData()
         format = self.format_combo.currentData()
+        language = self.language_combo.currentData()
         
         # UI 상태 업데이트
         self.summarize_button.setEnabled(False)
@@ -231,7 +300,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("요약 중...")
         
         # 요약 스레드 시작
-        self.summarize_thread = SummarizeThread(text, length, format)
+        self.summarize_thread = SummarizeThread(text, length, format, language)
         self.summarize_thread.finished.connect(self.on_summarize_finished)
         self.summarize_thread.error.connect(self.on_summarize_error)
         self.summarize_thread.start()

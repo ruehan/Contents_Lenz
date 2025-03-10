@@ -68,9 +68,11 @@
 				margin: 20px 0;
 				display: flex;
 				gap: 15px;
+				flex-wrap: wrap;
 			}
 			.option-group {
 				flex: 1;
+				min-width: 200px;
 			}
 			label {
 				display: block;
@@ -131,6 +133,11 @@
 				margin: 10px 0;
 				font-weight: bold;
 			}
+			.info {
+				color: #3498db;
+				margin: 10px 0;
+				font-style: italic;
+			}
 			#output {
 				white-space: pre-wrap;
 				padding: 15px;
@@ -169,6 +176,7 @@
 
 				<div class="tab-content active" id="text-tab">
 					<textarea id="input-text" placeholder="여기에 요약할 텍스트를 입력하세요..."></textarea>
+					<div id="detected-language" class="info"></div>
 				</div>
 
 				<div class="tab-content" id="file-tab">
@@ -197,8 +205,18 @@
 							{% endfor %}
 						</select>
 					</div>
+
+					<div class="option-group">
+						<label for="language-select">출력 언어</label>
+						<select id="language-select">
+							{% for key, value in supported_languages.items() %}
+							<option value="{{ key }}">{{ value }}</option>
+							{% endfor %}
+						</select>
+					</div>
 				</div>
 
+				<button id="detect-language-btn">언어 감지</button>
 				<button id="summarize-btn">요약하기</button>
 
 				<div class="progress">
@@ -244,12 +262,15 @@
 
 				// 요약 기능
 				const summarizeBtn = document.getElementById("summarize-btn");
+				const detectLanguageBtn = document.getElementById("detect-language-btn");
 				const inputText = document.getElementById("input-text");
 				const inputFile = document.getElementById("input-file");
 				const lengthSelect = document.getElementById("length-select");
 				const formatSelect = document.getElementById("format-select");
+				const languageSelect = document.getElementById("language-select");
 				const output = document.getElementById("output");
 				const errorMessage = document.getElementById("error-message");
+				const detectedLanguage = document.getElementById("detected-language");
 				const progress = document.querySelector(".progress");
 				const progressBar = document.querySelector(".progress-bar");
 
@@ -266,6 +287,56 @@
 					}
 				});
 
+				// 언어 감지 버튼 클릭 이벤트
+				detectLanguageBtn.addEventListener("click", async function () {
+					const text = inputText.value.trim();
+					if (!text) {
+						errorMessage.textContent = "언어를 감지할 텍스트를 입력하세요.";
+						return;
+					}
+
+					// UI 상태 업데이트
+					detectLanguageBtn.disabled = true;
+					errorMessage.textContent = "";
+					detectedLanguage.textContent = "언어 감지 중...";
+
+					try {
+						// 언어 감지 API 호출
+						const formData = new FormData();
+						formData.append("text", text);
+
+						const response = await fetch("/detect-language", {
+							method: "POST",
+							body: formData,
+						});
+
+						const data = await response.json();
+
+						if (response.ok) {
+							detectedLanguage.textContent = `감지된 언어: ${data.language_name} (${data.language})`;
+
+							// 언어 선택 드롭다운 업데이트
+							if (data.language && languageSelect.value === "auto") {
+								// 자동 모드인 경우 감지된 언어로 설정
+								for (let i = 0; i < languageSelect.options.length; i++) {
+									if (languageSelect.options[i].value === data.language) {
+										languageSelect.selectedIndex = i;
+										break;
+									}
+								}
+							}
+						} else {
+							errorMessage.textContent = data.error || "언어 감지 중 오류가 발생했습니다.";
+							detectedLanguage.textContent = "";
+						}
+					} catch (error) {
+						errorMessage.textContent = "서버 연결 오류가 발생했습니다.";
+						detectedLanguage.textContent = "";
+					} finally {
+						detectLanguageBtn.disabled = false;
+					}
+				});
+
 				// 요약 버튼 클릭 이벤트
 				summarizeBtn.addEventListener("click", async function () {
 					// 현재 활성화된 탭 확인
@@ -275,6 +346,7 @@
 					// 요약 옵션 추가
 					formData.append("length", lengthSelect.value);
 					formData.append("format", formatSelect.value);
+					formData.append("language", languageSelect.value);
 
 					if (activeTab === "text-tab") {
 						const text = inputText.value.trim();
@@ -298,6 +370,7 @@
 
 					// UI 상태 업데이트
 					summarizeBtn.disabled = true;
+					detectLanguageBtn.disabled = true;
 					errorMessage.textContent = "";
 					output.textContent = "요약 중...";
 					progress.style.display = "block";
@@ -325,6 +398,11 @@
 						if (response.ok) {
 							output.textContent = data.summary;
 
+							// 감지된 언어 표시 (자동 모드인 경우)
+							if (data.detected_language && languageSelect.value === "auto") {
+								detectedLanguage.textContent = `감지된 언어: ${data.detected_language_name} (${data.detected_language})`;
+							}
+
 							// 다운로드 버튼 활성화
 							downloadTxtBtn.disabled = false;
 							downloadDocxBtn.disabled = false;
@@ -346,6 +424,7 @@
 							progress.style.display = "none";
 							progressBar.style.width = "0%";
 							summarizeBtn.disabled = false;
+							detectLanguageBtn.disabled = false;
 						}, 1000);
 					}
 				});
