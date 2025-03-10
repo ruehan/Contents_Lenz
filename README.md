@@ -16,6 +16,7 @@ Contents Lenz는 GPT-4o Mini 모델을 활용한 GUI 기반 콘텐츠 요약 및
   - 요약 길이 조절 (짧은 요약, 중간 길이, 상세 요약)
   - 글머리 기호 또는 단락 형식 선택 옵션
   - 주요 키워드 및 핵심 아이디어 추출
+  - 다국어 지원: 원본 언어 감지 및 선택한 언어로 요약 출력
 
 - **고급 분석 기능** (추후 추가 예정)
 
@@ -29,6 +30,16 @@ Contents Lenz는 GPT-4o Mini 모델을 활용한 GUI 기반 콘텐츠 요약 및
   - 클립보드 복사 기능
   - 이메일 공유 옵션 (추후 추가 예정)
   - 소셜 미디어 공유 통합 (추후 추가 예정)
+
+## 언어 지원
+
+Contents Lenz는 다양한 언어로 된 콘텐츠를 처리할 수 있습니다:
+
+- **자동 언어 감지**: 입력된 텍스트의 언어를 자동으로 감지합니다.
+- **원본 언어 유지**: 기본적으로 원본 텍스트와 동일한 언어로 요약합니다.
+- **출력 언어 선택**: 원하는 언어로 요약 결과를 받을 수 있습니다 (한국어, 영어, 일본어, 중국어 등).
+
+이 기능을 통해 외국어로 된 문서를 빠르게 이해하거나, 다국어 환경에서 콘텐츠를 공유할 때 유용하게 활용할 수 있습니다.
 
 ## 설치 방법
 
@@ -72,7 +83,7 @@ python main.py
 SSH 환경이나 GUI를 사용할 수 없는 환경에서는 헤드리스 모드를 사용할 수 있습니다:
 
 ```bash
-python main.py --headless --input input.txt --output summary.txt --length medium --format paragraph
+python main.py --headless --input input.txt --output summary.txt --length medium --format paragraph --language ko
 ```
 
 옵션:
@@ -81,6 +92,21 @@ python main.py --headless --input input.txt --output summary.txt --length medium
 - `--output`: 요약 결과를 저장할 파일 경로 (선택, 지정하지 않으면 콘솔에 출력)
 - `--length`: 요약 길이 (short, medium, long, 기본값: medium)
 - `--format`: 요약 형식 (bullet, paragraph, structured, 기본값: paragraph)
+- `--language`: 요약 결과 언어 (ko, en, ja, zh 등, 기본값: 원본 언어)
+
+### 웹 인터페이스 모드
+
+웹 브라우저를 통해 애플리케이션을 사용할 수 있습니다:
+
+```bash
+python main.py --web
+```
+
+기본적으로 http://localhost:5000 에서 접속할 수 있으며, 포트를 변경하려면 `--port` 옵션을 사용할 수 있습니다:
+
+```bash
+python main.py --web --port 8080
+```
 
 ## 개발 로드맵
 
@@ -95,7 +121,7 @@ python main.py --headless --input input.txt --output summary.txt --length medium
 - **텍스트 처리**: NLTK
 - **파일 처리**: PyPDF2, python-docx
 - **웹 스크래핑**: BeautifulSoup4, requests
-- **데이터 시각화**: Matplotlib
+- **데이터 시각화**: Matplotlib (선택적)
 
 ## 라이센스
 
