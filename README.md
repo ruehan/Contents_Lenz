@@ -47,9 +47,10 @@ pip install -r requirements.txt
 
 3. OpenAI API 키 설정
 
-```bash
-# config.py 파일에 API 키를 설정하거나 환경 변수로 설정
-export OPENAI_API_KEY="your-api-key-here"
+`.env` 파일을 프로젝트 루트 디렉토리에 생성하고 다음과 같이 API 키를 설정합니다:
+
+```
+OPENAI_API_KEY=your_api_key_here
 ```
 
 4. 애플리케이션 실행
@@ -57,6 +58,29 @@ export OPENAI_API_KEY="your-api-key-here"
 ```bash
 python main.py
 ```
+
+## 실행 모드
+
+### GUI 모드 (기본)
+
+```bash
+python main.py
+```
+
+### 헤드리스 모드 (명령줄)
+
+SSH 환경이나 GUI를 사용할 수 없는 환경에서는 헤드리스 모드를 사용할 수 있습니다:
+
+```bash
+python main.py --headless --input input.txt --output summary.txt --length medium --format paragraph
+```
+
+옵션:
+
+- `--input`: 요약할 텍스트 파일 경로 (필수)
+- `--output`: 요약 결과를 저장할 파일 경로 (선택, 지정하지 않으면 콘솔에 출력)
+- `--length`: 요약 길이 (short, medium, long, 기본값: medium)
+- `--format`: 요약 형식 (bullet, paragraph, structured, 기본값: paragraph)
 
 ## 개발 로드맵
 
