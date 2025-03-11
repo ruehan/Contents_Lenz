@@ -81,10 +81,30 @@ class OpenAIClient:
                 "nl": "네덜란드어",
                 "ar": "아랍어",
                 "hi": "힌디어",
-                "vi": "베트남어"
+                "vi": "베트남어",
+                "th": "태국어",
+                "id": "인도네시아어",
+                "tr": "터키어",
+                "pl": "폴란드어",
+                "sv": "스웨덴어",
+                "da": "덴마크어",
+                "fi": "핀란드어",
+                "no": "노르웨이어",
+                "cs": "체코어",
+                "hu": "헝가리어",
+                "el": "그리스어",
+                "he": "히브리어",
+                "ro": "루마니아어",
+                "uk": "우크라이나어",
+                "fa": "페르시아어",
+                "ms": "말레이어"
             }
-            target_language = language_map.get(language, "한국어")
-            language_prompt = f"{target_language}로 요약해주세요."
+            target_language = language_map.get(language)
+            if target_language:
+                language_prompt = f"{target_language}로 요약해주세요."
+            else:
+                # 지원하지 않는 언어 코드인 경우 영어로 대체
+                language_prompt = "영어로 요약해주세요."
         
         # 프롬프트 구성
         prompt = f"""
@@ -97,17 +117,23 @@ class OpenAIClient:
         {language_prompt}
         
         주요 키워드와 핵심 아이디어를 포함해주세요.
+        
+        중요: 
+        1. 요약 결과에 "Summary:", "요약:", "Keywords:", "키워드:" 등의 제목이나 레이블을 포함하지 마세요.
+        2. 요약 내용만 직접 제공해주세요.
+        3. 별표(**)나 기타 마크다운 형식을 사용하지 마세요.
+        4. 요약 결과는 사용자가 바로 사용할 수 있는 깔끔한 텍스트여야 합니다.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "당신은 텍스트 요약 전문가입니다. 주어진 텍스트를 정확하고 간결하게 요약하는 것이 당신의 임무입니다."},
+                    {"role": "system", "content": "당신은 전문적인 콘텐츠 요약 도구입니다. 주어진 텍스트를 명확하고 간결하게 요약하는 것이 당신의 임무입니다. 제목이나 레이블 없이 요약 내용만 직접 제공하세요."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=4000,  # 요약 결과의 최대 토큰 수
-                temperature=0.3,  # 낮은 온도로 일관된 요약 생성
+                max_tokens=1000,
+                temperature=0.3,
             )
             
             return response.choices[0].message.content.strip()
@@ -116,18 +142,18 @@ class OpenAIClient:
             return f"요약 중 오류가 발생했습니다: {str(e)}"
     
     def extract_keywords(self, text, count=10, language="auto"):
-        """텍스트에서 주요 키워드 추출
+        """텍스트에서 키워드 추출
         
         Args:
             text (str): 키워드를 추출할 텍스트
             count (int): 추출할 키워드 수
-            language (str): 키워드 결과 언어 ("auto", "ko", "en", "ja", "zh" 등)
+            language (str): 키워드 언어 ("auto", "ko", "en", "ja", "zh" 등)
             
         Returns:
             list: 추출된 키워드 목록
         """
         if not text:
-            return []
+            return ["키워드를 추출할 텍스트가 없습니다."]
         
         # 언어 설정에 따른 프롬프트 조정
         language_prompt = ""
@@ -148,10 +174,30 @@ class OpenAIClient:
                 "nl": "네덜란드어",
                 "ar": "아랍어",
                 "hi": "힌디어",
-                "vi": "베트남어"
+                "vi": "베트남어",
+                "th": "태국어",
+                "id": "인도네시아어",
+                "tr": "터키어",
+                "pl": "폴란드어",
+                "sv": "스웨덴어",
+                "da": "덴마크어",
+                "fi": "핀란드어",
+                "no": "노르웨이어",
+                "cs": "체코어",
+                "hu": "헝가리어",
+                "el": "그리스어",
+                "he": "히브리어",
+                "ro": "루마니아어",
+                "uk": "우크라이나어",
+                "fa": "페르시아어",
+                "ms": "말레이어"
             }
-            target_language = language_map.get(language, "한국어")
-            language_prompt = f"{target_language}로 키워드를 추출해주세요."
+            target_language = language_map.get(language)
+            if target_language:
+                language_prompt = f"{target_language}로 키워드를 추출해주세요."
+            else:
+                # 지원하지 않는 언어 코드인 경우 영어로 대체
+                language_prompt = "영어로 키워드를 추출해주세요."
         
         prompt = f"""
         다음 텍스트에서 가장 중요한 키워드 {count}개를 추출해주세요:
@@ -159,14 +205,19 @@ class OpenAIClient:
         {text}
         
         {language_prompt}
-        키워드만 쉼표로 구분하여 나열해주세요.
+        
+        중요:
+        1. "Keywords:", "키워드:" 등의 제목이나 레이블을 포함하지 마세요.
+        2. 키워드만 쉼표로 구분하여 나열해주세요.
+        3. 별표(**)나 기타 마크다운 형식을 사용하지 마세요.
+        4. 각 키워드는 1-3단어로 구성된 간결한 형태여야 합니다.
         """
         
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "당신은 텍스트 분석 전문가입니다. 주어진 텍스트에서 가장 중요한 키워드를 추출하는 것이 당신의 임무입니다."},
+                    {"role": "system", "content": "당신은 텍스트 분석 전문가입니다. 주어진 텍스트에서 가장 중요한 키워드를 추출하는 것이 당신의 임무입니다. 제목이나 레이블 없이 키워드만 쉼표로 구분하여 제공하세요."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=100,
@@ -190,7 +241,7 @@ class OpenAIClient:
             str: 감지된 언어 코드 ("ko", "en", "ja", "zh" 등)
         """
         if not text:
-            return "ko"  # 기본값은 한국어
+            return "en"  # 기본값은 영어로 변경
         
         # 언어 감지를 위한 짧은 샘플 텍스트 추출 (최대 500자)
         sample_text = text[:500]
@@ -200,7 +251,8 @@ class OpenAIClient:
         
         {sample_text}
         
-        언어 코드만 반환해주세요 (ko, en, ja, zh, es, fr, de, ru, pt, it, nl, ar, hi, vi 중 하나).
+        언어 코드만 반환해주세요. 다음 중 하나여야 합니다:
+        ko, en, ja, zh, es, fr, de, ru, pt, it, nl, ar, hi, vi, th, id, tr, pl, sv, da, fi, no, cs, hu, el, he, ro, uk, fa, ms
         """
         
         try:
@@ -231,16 +283,39 @@ class OpenAIClient:
                 "dutch": "nl",
                 "arabic": "ar",
                 "hindi": "hi",
-                "vietnamese": "vi"
+                "vietnamese": "vi",
+                "thai": "th",
+                "indonesian": "id",
+                "turkish": "tr",
+                "polish": "pl",
+                "swedish": "sv",
+                "danish": "da",
+                "finnish": "fi",
+                "norwegian": "no",
+                "czech": "cs",
+                "hungarian": "hu",
+                "greek": "el",
+                "hebrew": "he",
+                "romanian": "ro",
+                "ukrainian": "uk",
+                "persian": "fa",
+                "malay": "ms"
             }
             
-            # 언어 코드가 이미 2자리 코드인 경우 그대로 반환
-            if detected_language in ["ko", "en", "ja", "zh", "es", "fr", "de", "ru", "pt", "it", "nl", "ar", "hi", "vi"]:
+            # 지원하는 언어 코드 목록
+            supported_codes = [
+                "ko", "en", "ja", "zh", "es", "fr", "de", "ru", "pt", "it", "nl", 
+                "ar", "hi", "vi", "th", "id", "tr", "pl", "sv", "da", "fi", "no", 
+                "cs", "hu", "el", "he", "ro", "uk", "fa", "ms"
+            ]
+            
+            # 언어 코드가 이미 지원하는 코드인 경우 그대로 반환
+            if detected_language in supported_codes:
                 return detected_language
             
             # 언어 이름이 반환된 경우 코드로 변환
-            return language_map.get(detected_language, "ko")
+            return language_map.get(detected_language, "en")  # 기본값을 영어로 변경
         
         except Exception as e:
             print(f"언어 감지 중 오류가 발생했습니다: {str(e)}")
-            return "ko"  # 오류 발생 시 기본값은 한국어 
+            return "en"  # 오류 발생 시 기본값은 영어로 변경 

@@ -5,6 +5,10 @@ contextBridge.exposeInMainWorld("api", {
 	// API 상태 확인
 	getConfig: () => ipcRenderer.invoke("get-config"),
 
+	// 웹 스크래핑 관련
+	scrapeUrl: (params) => ipcRenderer.invoke("scrape-url", params),
+	summarizeUrl: (params) => ipcRenderer.invoke("summarize-url", params),
+
 	// 요약 관련
 	summarizeText: (params) => ipcRenderer.invoke("summarize-text", params),
 	summarizeFile: (params) => ipcRenderer.invoke("summarize-file", params),
