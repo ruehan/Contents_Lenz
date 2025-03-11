@@ -19,10 +19,10 @@ const urlContent = document.getElementById("urlContent");
 
 // 요약 설정 요소
 const summaryLength = document.getElementById("summaryLength");
+const outputLanguage = document.getElementById("outputLanguage");
 
 // 기본 요약 옵션 (UI에서 제거됨)
 const DEFAULT_SUMMARY_FORMAT = "paragraph";
-const DEFAULT_OUTPUT_LANGUAGE = "auto";
 
 const summarizeBtn = document.getElementById("summarizeBtn");
 const extractKeywordsBtn = document.getElementById("extractKeywordsBtn");
@@ -218,7 +218,7 @@ async function summarizeUrl() {
 			url: url,
 			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
-			language: DEFAULT_OUTPUT_LANGUAGE,
+			language: outputLanguage.value,
 		});
 
 		showLoading(false);
@@ -262,7 +262,7 @@ async function summarizeText() {
 			text: text,
 			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
-			language: DEFAULT_OUTPUT_LANGUAGE,
+			language: outputLanguage.value,
 		});
 
 		showLoading(false);
@@ -305,7 +305,7 @@ async function summarizeFile() {
 			filePath: selectedFilePath,
 			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
-			language: DEFAULT_OUTPUT_LANGUAGE,
+			language: outputLanguage.value,
 		});
 
 		showLoading(false);
@@ -353,7 +353,7 @@ async function extractKeywordsFromText(text) {
 		const response = await window.api.extractKeywords({
 			text: text,
 			count: 10,
-			language: DEFAULT_OUTPUT_LANGUAGE,
+			language: outputLanguage.value,
 		});
 
 		showLoading(false);
