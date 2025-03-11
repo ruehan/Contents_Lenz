@@ -59,19 +59,9 @@ async def root():
     """API 루트 경로"""
     return {
         "message": "Contents Lenz API 서버에 오신 것을 환영합니다.",
+        "api_url": "https://contents-lenz.onrender.com",
         "docs_url": "/docs",
         "redoc_url": "/redoc"
-    }
-
-@app.get("/config")
-async def get_config():
-    """API 설정 정보 반환"""
-    return {
-        "summary_lengths": SUMMARY_LENGTHS,
-        "summary_formats": SUMMARY_FORMATS,
-        "supported_languages": SUPPORTED_LANGUAGES,
-        "supported_text_formats": SUPPORTED_TEXT_FORMATS,
-        "supported_document_formats": SUPPORTED_DOCUMENT_FORMATS
     }
 
 @app.post("/summarize/text", response_model=SummaryResponse)

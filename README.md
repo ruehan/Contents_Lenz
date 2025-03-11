@@ -1,6 +1,6 @@
 # Contents Lenz - AI 기반 콘텐츠 요약 및 분석 도구
 
-Contents Lenz는 GPT-4o Mini 모델을 활용한 GUI 기반 콘텐츠 요약 및 분석 도구입니다. 긴 문서, 기사, PDF 등을 쉽게 요약하고 분석할 수 있는 직관적인 인터페이스를 제공합니다.
+Contents Lenz는 GPT-4o Mini 모델을 활용한 콘텐츠 요약 및 분석 도구입니다. 긴 문서, 기사, PDF 등을 쉽게 요약하고 분석할 수 있습니다.
 
 ## 주요 기능
 
@@ -64,23 +64,35 @@ pip install -r requirements.txt
 OPENAI_API_KEY=your_api_key_here
 ```
 
-4. 애플리케이션 실행
+## 사용 방법
+
+### 일렉트론 UI 실행 (권장)
+
+일렉트론 기반 데스크톱 UI를 사용하는 것이 가장 편리합니다:
+
+```bash
+cd electron
+npm install
+npm start
+```
+
+### API 서버 실행
+
+API 서버를 실행하여 다양한 클라이언트에서 사용할 수 있습니다:
+
+```bash
+python main.py --api --port 8000
+```
+
+또는 간단히:
 
 ```bash
 python main.py
 ```
 
-## 실행 모드
+### 명령줄 모드
 
-### GUI 모드 (기본)
-
-```bash
-python main.py
-```
-
-### 헤드리스 모드 (명령줄)
-
-SSH 환경이나 GUI를 사용할 수 없는 환경에서는 헤드리스 모드를 사용할 수 있습니다:
+SSH 환경이나 스크립트에서 사용할 때는 명령줄 모드를 사용할 수 있습니다:
 
 ```bash
 python main.py --headless --input input.txt --output summary.txt --length medium --format paragraph --language ko
@@ -94,29 +106,53 @@ python main.py --headless --input input.txt --output summary.txt --length medium
 - `--format`: 요약 형식 (bullet, paragraph, structured, 기본값: paragraph)
 - `--language`: 요약 결과 언어 (ko, en, ja, zh 등, 기본값: 원본 언어)
 
-### 웹 인터페이스 모드
+## API 서버
 
-웹 브라우저를 통해 애플리케이션을 사용할 수 있습니다:
+### API 주소
+
+배포된 API 서버는 다음 주소에서 접근할 수 있습니다:
+
+- **API 주소**: https://contents-lenz.onrender.com
+- **API 문서**: https://contents-lenz.onrender.com/docs
+- **ReDoc 문서**: https://contents-lenz.onrender.com/redoc
+
+### API 서버 실행 방법
 
 ```bash
-python main.py --web
+# 기본 실행
+uvicorn app:app --host 0.0.0.0 --port 8000
+
+# 개발 모드 (코드 변경 시 자동 재시작)
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-기본적으로 http://localhost:5000 에서 접속할 수 있으며, 포트를 변경하려면 `--port` 옵션을 사용할 수 있습니다:
+### 또는 app.py 실행
 
 ```bash
-python main.py --web --port 8080
+python app.py
 ```
+
+### 기존 run_api_server.py 사용
+
+```bash
+python run_api_server.py --host 0.0.0.0 --port 8000 --reload
+```
+
+API 서버가 실행되면 다음 URL에서 API 문서를 확인할 수 있습니다:
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ## 개발 로드맵
 
-- **1단계**: 기본 버전 - 핵심 UI 개발 및 GPT-4o Mini API 연동, 텍스트 입력 및 기본 요약 기능 구현
+- **1단계**: 기본 버전 - 핵심 기능 개발 및 GPT-4o Mini API 연동, 텍스트 입력 및 기본 요약 기능 구현
 - **2단계**: 기능 확장 - 파일 업로드 및 URL 스크래핑 추가, 고급 분석 기능 구현
 - **3단계**: 최적화 및 마무리 - 사용자 피드백 기반 UI/UX 개선, 성능 최적화 및 에러 처리 강화
 
 ## 기술 스택
 
-- **GUI 프레임워크**: PyQt6
+- **일렉트론 UI**: Electron, HTML, CSS, JavaScript
+- **API 서버**: FastAPI, Uvicorn
 - **AI 통합**: OpenAI API (GPT-4o Mini)
 - **텍스트 처리**: NLTK
 - **파일 처리**: PyPDF2, python-docx
