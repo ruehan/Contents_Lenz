@@ -1,9 +1,4 @@
 // DOM 요소
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
-const apiUrlInput = document.getElementById("apiUrl");
-const saveSettingsBtn = document.getElementById("saveSettingsBtn");
-const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
 const apiStatus = document.getElementById("apiStatus");
 
 const textTabBtn = document.getElementById("textTabBtn");
@@ -15,9 +10,10 @@ const inputText = document.getElementById("inputText");
 const selectFileBtn = document.getElementById("selectFileBtn");
 const selectedFile = document.getElementById("selectedFile");
 
-const summaryLength = document.getElementById("summaryLength");
-const summaryFormat = document.getElementById("summaryFormat");
-const outputLanguage = document.getElementById("outputLanguage");
+// 기본 요약 옵션 (UI에서 제거됨)
+const DEFAULT_SUMMARY_LENGTH = "medium";
+const DEFAULT_SUMMARY_FORMAT = "paragraph";
+const DEFAULT_OUTPUT_LANGUAGE = "auto";
 
 const summarizeBtn = document.getElementById("summarizeBtn");
 const extractKeywordsBtn = document.getElementById("extractKeywordsBtn");
@@ -48,34 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		apiStatus.style.color = "#e74c3c";
 	}
 
-	// 설정 패널 이벤트
-	settingsBtn.addEventListener("click", () => {
-		settingsPanel.classList.toggle("hidden");
-	});
-
-	saveSettingsBtn.addEventListener("click", async () => {
-		const apiUrl = apiUrlInput.value.trim();
-		if (apiUrl) {
-			await window.api.setApiUrl(apiUrl);
-			settingsPanel.classList.add("hidden");
-
-			// API 상태 확인
-			const config = await window.api.getConfig();
-			if (!config.error) {
-				apiStatus.textContent = "API 상태: 연결됨";
-				apiStatus.style.color = "#27ae60";
-			} else {
-				apiStatus.textContent = "API 상태: 연결 안됨";
-				apiStatus.style.color = "#e74c3c";
-			}
-		}
-	});
-
-	cancelSettingsBtn.addEventListener("click", () => {
-		settingsPanel.classList.add("hidden");
-	});
-
-	// 탭 전환 이벤트
+	// 이벤트 리스너 설정
 	textTabBtn.addEventListener("click", () => {
 		textTabBtn.classList.add("active");
 		fileTabBtn.classList.remove("active");
@@ -90,120 +59,83 @@ document.addEventListener("DOMContentLoaded", async () => {
 		textInputTab.classList.add("hidden");
 	});
 
-	// 파일 선택 이벤트
 	selectFileBtn.addEventListener("click", async () => {
 		const result = await window.api.selectFile();
-		if (!result.canceled && result.filePath) {
-			selectedFilePath = result.filePath;
+		if (!result.canceled && result.filePaths.length > 0) {
+			selectedFilePath = result.filePaths[0];
 			selectedFile.textContent = selectedFilePath.split(/[\\/]/).pop(); // 파일명만 표시
+			selectedFile.style.color = "#2c3e50";
 		}
 	});
 
-	// 요약 버튼 이벤트
 	summarizeBtn.addEventListener("click", async () => {
-		// 입력 검증
-		if (textTabBtn.classList.contains("active")) {
-			// 텍스트 입력 모드
-			if (!inputText.value.trim()) {
-				alert("요약할 텍스트를 입력하세요.");
-				return;
-			}
-
-			await summarizeText();
-		} else {
-			// 파일 입력 모드
-			if (!selectedFilePath) {
-				alert("요약할 파일을 선택하세요.");
-				return;
-			}
-
+		if (textInputTab.classList.contains("hidden")) {
+			// 파일 업로드 탭이 활성화된 경우
 			await summarizeFile();
-		}
-	});
-
-	// 키워드 추출 버튼 이벤트
-	extractKeywordsBtn.addEventListener("click", async () => {
-		// 입력 검증
-		if (textTabBtn.classList.contains("active")) {
-			// 텍스트 입력 모드
-			if (!inputText.value.trim()) {
-				alert("키워드를 추출할 텍스트를 입력하세요.");
-				return;
-			}
-
-			await extractKeywords();
 		} else {
-			// 파일 입력 모드
-			if (!selectedFilePath) {
-				alert("키워드를 추출할 파일을 선택하세요.");
-				return;
-			}
-
-			alert("파일에서 키워드 추출은 아직 지원하지 않습니다.");
+			// 텍스트 입력 탭이 활성화된 경우
+			await summarizeText();
 		}
 	});
 
-	// 결과 복사 버튼 이벤트
+	extractKeywordsBtn.addEventListener("click", async () => {
+		await extractKeywords();
+	});
+
 	copyResultBtn.addEventListener("click", () => {
-		navigator.clipboard
-			.writeText(currentResult)
-			.then(() => {
-				alert("결과가 클립보드에 복사되었습니다.");
-			})
-			.catch((err) => {
-				console.error("클립보드 복사 오류:", err);
-				alert("클립보드 복사 중 오류가 발생했습니다.");
-			});
+		if (currentResult) {
+			navigator.clipboard.writeText(currentResult).then(
+				() => {
+					// 복사 성공
+					const originalText = copyResultBtn.textContent;
+					copyResultBtn.textContent = "✓ 복사됨";
+					setTimeout(() => {
+						copyResultBtn.textContent = originalText;
+					}, 2000);
+				},
+				(err) => {
+					console.error("클립보드 복사 실패:", err);
+				}
+			);
+		}
 	});
 
-	// 결과 저장 버튼 이벤트
 	saveResultBtn.addEventListener("click", async () => {
-		if (!currentResult) {
-			alert("저장할 결과가 없습니다.");
-			return;
-		}
-
-		const result = await window.api.saveFile({
-			summary: currentResult,
-			defaultPath: "summary.txt",
-		});
-
-		if (result.success) {
-			alert(`결과가 ${result.filePath}에 저장되었습니다.`);
-		} else if (!result.canceled && result.error) {
-			alert(`저장 중 오류가 발생했습니다: ${result.error}`);
+		if (currentResult) {
+			await window.api.saveResult(currentResult);
 		}
 	});
 });
 
 // 텍스트 요약 함수
 async function summarizeText() {
+	const text = inputText.value.trim();
+	if (!text) {
+		alert("요약할 텍스트를 입력하세요.");
+		return;
+	}
+
+	hideResults();
+	showLoading(true);
+
 	try {
-		// 로딩 표시
-		showLoading(true);
-
-		// 결과 컨테이너 초기화
-		hideResults();
-
-		// API 호출
 		const response = await window.api.summarizeText({
-			text: inputText.value.trim(),
-			length: summaryLength.value,
-			format: summaryFormat.value,
-			language: outputLanguage.value,
+			text: text,
+			length: DEFAULT_SUMMARY_LENGTH,
+			format: DEFAULT_SUMMARY_FORMAT,
+			language: DEFAULT_OUTPUT_LANGUAGE,
 		});
 
-		// 오류 처리
+		showLoading(false);
+
 		if (response.error) {
-			alert(`요약 중 오류가 발생했습니다: ${response.error}`);
+			alert(`요약 오류: ${response.error}`);
 			return;
 		}
 
-		// 결과 표시
-		currentResult = response.summary;
 		resultContent.textContent = response.summary;
+		currentResult = response.summary;
 
-		// 감지된 언어 표시
 		if (response.detected_language) {
 			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
 			detectedLanguage.classList.remove("hidden");
@@ -212,42 +144,41 @@ async function summarizeText() {
 		}
 
 		resultContainer.classList.remove("hidden");
+		keywordsContainer.classList.add("hidden");
 	} catch (error) {
-		console.error("요약 오류:", error);
-		alert(`요약 중 오류가 발생했습니다: ${error.message}`);
-	} finally {
 		showLoading(false);
+		alert(`요약 중 오류가 발생했습니다: ${error.message}`);
 	}
 }
 
 // 파일 요약 함수
 async function summarizeFile() {
+	if (!selectedFilePath) {
+		alert("요약할 파일을 선택하세요.");
+		return;
+	}
+
+	hideResults();
+	showLoading(true);
+
 	try {
-		// 로딩 표시
-		showLoading(true);
-
-		// 결과 컨테이너 초기화
-		hideResults();
-
-		// API 호출
 		const response = await window.api.summarizeFile({
 			filePath: selectedFilePath,
-			length: summaryLength.value,
-			format: summaryFormat.value,
-			language: outputLanguage.value,
+			length: DEFAULT_SUMMARY_LENGTH,
+			format: DEFAULT_SUMMARY_FORMAT,
+			language: DEFAULT_OUTPUT_LANGUAGE,
 		});
 
-		// 오류 처리
+		showLoading(false);
+
 		if (response.error) {
-			alert(`요약 중 오류가 발생했습니다: ${response.error}`);
+			alert(`요약 오류: ${response.error}`);
 			return;
 		}
 
-		// 결과 표시
-		currentResult = response.summary;
 		resultContent.textContent = response.summary;
+		currentResult = response.summary;
 
-		// 감지된 언어 표시
 		if (response.detected_language) {
 			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
 			detectedLanguage.classList.remove("hidden");
@@ -256,50 +187,51 @@ async function summarizeFile() {
 		}
 
 		resultContainer.classList.remove("hidden");
+		keywordsContainer.classList.add("hidden");
 	} catch (error) {
-		console.error("파일 요약 오류:", error);
-		alert(`파일 요약 중 오류가 발생했습니다: ${error.message}`);
-	} finally {
 		showLoading(false);
+		alert(`파일 요약 중 오류가 발생했습니다: ${error.message}`);
 	}
 }
 
 // 키워드 추출 함수
 async function extractKeywords() {
+	const text = inputText.value.trim();
+	if (!text) {
+		alert("키워드를 추출할 텍스트를 입력하세요.");
+		return;
+	}
+
+	hideResults();
+	showLoading(true);
+
 	try {
-		// 로딩 표시
-		showLoading(true);
-
-		// 결과 컨테이너 초기화
-		hideResults();
-
-		// API 호출
 		const response = await window.api.extractKeywords({
-			text: inputText.value.trim(),
+			text: text,
 			count: 10,
-			language: outputLanguage.value,
+			language: DEFAULT_OUTPUT_LANGUAGE,
 		});
 
-		// 오류 처리
+		showLoading(false);
+
 		if (response.error) {
-			alert(`키워드 추출 중 오류가 발생했습니다: ${response.error}`);
+			alert(`키워드 추출 오류: ${response.error}`);
 			return;
 		}
 
-		// 결과 표시
 		keywordsList.innerHTML = "";
 		response.keywords.forEach((keyword) => {
-			const span = document.createElement("span");
-			span.textContent = keyword;
-			keywordsList.appendChild(span);
+			const keywordElement = document.createElement("span");
+			keywordElement.className = "keyword";
+			keywordElement.textContent = keyword;
+			keywordsList.appendChild(keywordElement);
 		});
 
 		keywordsContainer.classList.remove("hidden");
+		resultContainer.classList.add("hidden");
 	} catch (error) {
-		console.error("키워드 추출 오류:", error);
-		alert(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
-	} finally {
 		showLoading(false);
+		alert(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
 	}
 }
 

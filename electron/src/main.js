@@ -8,8 +8,8 @@ const Store = require("electron-store");
 // 설정 저장소 초기화
 const store = new Store();
 
-// API 서버 URL
-const API_URL = store.get("apiUrl") || "http://112.162.84.70:8000";
+// API 서버 URL (고정)
+const API_URL = "https://contents-lenz.onrender.com";
 
 // 개발 모드 확인
 const isDev = process.argv.includes("--dev");
@@ -64,21 +64,15 @@ app.on("window-all-closed", () => {
 	}
 });
 
-// API 설정 가져오기
+// API 상태 확인
 ipcMain.handle("get-config", async () => {
 	try {
-		const response = await axios.get(`${API_URL}/config`);
+		const response = await axios.get(`${API_URL}/`);
 		return response.data;
 	} catch (error) {
-		console.error("API 설정 가져오기 오류:", error);
+		console.error("API 연결 확인 오류:", error);
 		return { error: error.message };
 	}
-});
-
-// API URL 설정
-ipcMain.handle("set-api-url", async (event, url) => {
-	store.set("apiUrl", url);
-	return { success: true };
 });
 
 // 텍스트 요약 API
