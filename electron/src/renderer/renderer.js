@@ -159,12 +159,11 @@ async function fetchUrlContent() {
 		return;
 	}
 
-	showLoading(true);
 	urlPreview.classList.add("hidden");
+	showLoading(true, "웹 페이지 콘텐츠를 가져오는 중...");
 
 	try {
 		const response = await window.api.scrapeUrl({ url });
-
 		showLoading(false);
 
 		if (response.error) {
@@ -172,13 +171,11 @@ async function fetchUrlContent() {
 			return;
 		}
 
-		currentUrl = response.url;
-		scrapedContent = response.content;
-
-		urlTitle.textContent = response.title;
-		urlContent.textContent = response.content.length > 500 ? response.content.substring(0, 500) + "..." : response.content;
-
+		urlTitle.textContent = response.title || "제목 없음";
+		urlContent.textContent = response.content || "콘텐츠를 가져올 수 없습니다.";
 		urlPreview.classList.remove("hidden");
+		scrapedContent = response.content;
+		currentUrl = url;
 	} catch (error) {
 		showLoading(false);
 		alert(`URL 콘텐츠 가져오기 중 오류가 발생했습니다: ${error.message}`);
@@ -194,7 +191,7 @@ async function summarizeUrl() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "URL 콘텐츠 요약 중...");
 
 	try {
 		const response = await window.api.summarizeUrl({
@@ -241,7 +238,7 @@ async function summarizeText() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "텍스트 요약 중...");
 
 	try {
 		const response = await window.api.summarizeText({
@@ -285,7 +282,7 @@ async function summarizeFile() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "파일 내용 요약 중...");
 
 	try {
 		const response = await window.api.summarizeFile({
@@ -324,11 +321,15 @@ async function summarizeFile() {
 // 요약 결과를 위한 키워드 추출 함수
 async function extractKeywordsForSummary(text) {
 	try {
+		showLoading(true, "키워드 추출 중...");
+
 		const response = await window.api.extractKeywords({
 			text: text,
 			count: 8,
 			language: outputLanguage.value,
 		});
+
+		showLoading(false);
 
 		if (response.error) {
 			console.error(`키워드 추출 오류: ${response.error}`);
@@ -347,19 +348,25 @@ async function extractKeywordsForSummary(text) {
 			keywordsList.appendChild(keywordElement);
 		});
 	} catch (error) {
+		showLoading(false);
 		console.error(`키워드 추출 중 오류 발생: ${error.message}`);
 		keywordsList.innerHTML = `<span class="keyword placeholder-keyword">키워드 추출 실패</span>`;
 	}
 }
 
 // 로딩 표시 함수
-function showLoading(show) {
+function showLoading(show, message = "처리 중...") {
+	const loadingMessage = loadingIndicator.querySelector("p");
+
 	if (show) {
+		loadingMessage.textContent = message;
 		loadingIndicator.classList.remove("hidden");
 		summarizeBtn.disabled = true;
+		document.body.style.overflow = "hidden"; // 배경 스크롤 방지
 	} else {
 		loadingIndicator.classList.add("hidden");
 		summarizeBtn.disabled = false;
+		document.body.style.overflow = ""; // 스크롤 복원
 	}
 }
 
