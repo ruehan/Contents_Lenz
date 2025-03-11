@@ -30,17 +30,21 @@
 		},
 		"files": [
 			"src/**/*",
-			"package.json"
+			"package.json",
+			"assets/**/*"
 		],
 		"mac": {
-			"category": "public.app-category.productivity"
+			"category": "public.app-category.productivity",
+			"icon": "assets/icons/icon.icns"
 		},
 		"win": {
-			"target": "nsis"
+			"target": "nsis",
+			"icon": "assets/icons/icon.ico"
 		},
 		"linux": {
 			"target": "AppImage",
-			"category": "Office"
+			"category": "Office",
+			"icon": "assets/icons"
 		}
 	}
 }
