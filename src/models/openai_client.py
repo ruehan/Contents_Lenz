@@ -13,7 +13,21 @@ class OpenAIClient:
         if not self.api_key:
             raise ValueError("OpenAI API 키가 설정되지 않았습니다. 환경 변수 OPENAI_API_KEY를 설정하세요.")
         
-        self.client = openai.OpenAI(api_key=self.api_key)
+        # 최신 버전의 OpenAI 라이브러리와 호환되도록 수정
+        try:
+            # 최신 버전 방식으로 초기화 시도
+            self.client = openai.OpenAI(api_key=self.api_key)
+        except TypeError as e:
+            if 'proxies' in str(e):
+                # proxies 매개변수 문제가 발생한 경우 대체 방법 사용
+                import httpx
+                self.client = openai.OpenAI(
+                    api_key=self.api_key,
+                    http_client=httpx.Client()
+                )
+            else:
+                # 다른 오류인 경우 다시 발생
+                raise
     
     def summarize_text(self, text, length="medium", format="paragraph", language="auto"):
         """텍스트 요약 기능

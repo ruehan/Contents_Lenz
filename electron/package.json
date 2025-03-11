@@ -1,0 +1,46 @@
+{
+	"name": "contents-lenz-electron",
+	"version": "1.0.0",
+	"description": "Contents Lenz - AI 기반 콘텐츠 요약 및 분석 도구",
+	"main": "src/main.js",
+	"scripts": {
+		"start": "electron .",
+		"dev": "electron . --dev",
+		"build": "electron-builder",
+		"build:win": "electron-builder --win",
+		"build:mac": "electron-builder --mac",
+		"build:linux": "electron-builder --linux"
+	},
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"electron": "^28.1.0",
+		"electron-builder": "^24.9.1"
+	},
+	"dependencies": {
+		"axios": "^1.6.2",
+		"electron-store": "^8.1.0",
+		"form-data": "^4.0.0"
+	},
+	"build": {
+		"appId": "com.contents-lenz.app",
+		"productName": "Contents Lenz",
+		"directories": {
+			"output": "dist"
+		},
+		"files": [
+			"src/**/*",
+			"package.json"
+		],
+		"mac": {
+			"category": "public.app-category.productivity"
+		},
+		"win": {
+			"target": "nsis"
+		},
+		"linux": {
+			"target": "AppImage",
+			"category": "Office"
+		}
+	}
+}

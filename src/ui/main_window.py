@@ -23,7 +23,7 @@ class SummarizeThread(QThread):
     finished = pyqtSignal(str)  # 요약 완료 시그널
     error = pyqtSignal(str)     # 오류 발생 시그널
     
-    def __init__(self, text, length, format, language="auto"):
+    def __init__(self, text, length="medium", format="paragraph", language="auto"):
         super().__init__()
         self.text = text
         self.length = length
@@ -129,35 +129,10 @@ class MainWindow(QMainWindow):
         
         input_tabs.addTab(file_upload_widget, "파일 업로드")
         
-        # 옵션 영역
-        options_layout = QHBoxLayout()
-        
-        # 요약 길이 선택
-        length_label = QLabel("요약 길이:")
-        self.length_combo = QComboBox()
-        for key, value in SUMMARY_LENGTHS.items():
-            self.length_combo.addItem(value, key)
-        
-        # 요약 형식 선택
-        format_label = QLabel("요약 형식:")
-        self.format_combo = QComboBox()
-        for key, value in SUMMARY_FORMATS.items():
-            self.format_combo.addItem(value, key)
-        
-        # 언어 선택
-        language_label = QLabel("출력 언어:")
-        self.language_combo = QComboBox()
-        for key, value in SUPPORTED_LANGUAGES.items():
-            self.language_combo.addItem(value, key)
-        
-        options_layout.addWidget(length_label)
-        options_layout.addWidget(self.length_combo)
-        options_layout.addWidget(format_label)
-        options_layout.addWidget(self.format_combo)
-        options_layout.addWidget(language_label)
-        options_layout.addWidget(self.language_combo)
-        
-        input_layout.addLayout(options_layout)
+        # 기본 설정 값 (UI에서는 보이지 않음)
+        self.default_length = "medium"
+        self.default_format = "paragraph"
+        self.default_language = "auto"
         
         # 요약 버튼
         self.summarize_button = QPushButton("요약하기")
@@ -289,10 +264,10 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "입력 오류", "요약할 텍스트를 입력하세요.")
             return
         
-        # 요약 옵션 가져오기
-        length = self.length_combo.currentData()
-        format = self.format_combo.currentData()
-        language = self.language_combo.currentData()
+        # 기본 요약 옵션 사용
+        length = self.default_length
+        format = self.default_format
+        language = self.default_language
         
         # UI 상태 업데이트
         self.summarize_button.setEnabled(False)
