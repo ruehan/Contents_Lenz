@@ -17,8 +17,10 @@ const urlPreview = document.getElementById("urlPreview");
 const urlTitle = document.getElementById("urlTitle");
 const urlContent = document.getElementById("urlContent");
 
+// 요약 설정 요소
+const summaryLength = document.getElementById("summaryLength");
+
 // 기본 요약 옵션 (UI에서 제거됨)
-const DEFAULT_SUMMARY_LENGTH = "medium";
 const DEFAULT_SUMMARY_FORMAT = "paragraph";
 const DEFAULT_OUTPUT_LANGUAGE = "auto";
 
@@ -43,18 +45,33 @@ let scrapedContent = "";
 
 // 초기화
 document.addEventListener("DOMContentLoaded", async () => {
+	console.log("DOM이 로드되었습니다.");
+
 	// API URL 설정 로드
-	const storedApiUrl = await window.api.getConfig();
-	if (!storedApiUrl.error) {
-		apiStatus.textContent = "API 상태: 연결됨";
-		apiStatus.style.color = "#27ae60";
-	} else {
+	try {
+		console.log("API 설정을 로드합니다...");
+		const storedApiUrl = await window.api.getConfig();
+		console.log("API 설정 응답:", storedApiUrl);
+
+		if (!storedApiUrl.error) {
+			apiStatus.textContent = "API 상태: 연결됨";
+			apiStatus.style.color = "#27ae60";
+		} else {
+			apiStatus.textContent = "API 상태: 연결 안됨";
+			apiStatus.style.color = "#e74c3c";
+			console.error("API 연결 오류:", storedApiUrl.error);
+		}
+	} catch (error) {
+		console.error("API 설정 로드 중 오류 발생:", error);
 		apiStatus.textContent = "API 상태: 연결 안됨";
 		apiStatus.style.color = "#e74c3c";
 	}
 
 	// 이벤트 리스너 설정
+	console.log("이벤트 리스너를 설정합니다...");
+
 	textTabBtn.addEventListener("click", () => {
+		console.log("텍스트 탭 클릭됨");
 		textTabBtn.classList.add("active");
 		fileTabBtn.classList.remove("active");
 		urlTabBtn.classList.remove("active");
@@ -64,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	fileTabBtn.addEventListener("click", () => {
+		console.log("파일 탭 클릭됨");
 		fileTabBtn.classList.add("active");
 		textTabBtn.classList.remove("active");
 		urlTabBtn.classList.remove("active");
@@ -73,6 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	urlTabBtn.addEventListener("click", () => {
+		console.log("URL 탭 클릭됨");
 		urlTabBtn.classList.add("active");
 		textTabBtn.classList.remove("active");
 		fileTabBtn.classList.remove("active");
@@ -197,7 +216,7 @@ async function summarizeUrl() {
 	try {
 		const response = await window.api.summarizeUrl({
 			url: url,
-			length: DEFAULT_SUMMARY_LENGTH,
+			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
 			language: DEFAULT_OUTPUT_LANGUAGE,
 		});
@@ -241,7 +260,7 @@ async function summarizeText() {
 	try {
 		const response = await window.api.summarizeText({
 			text: text,
-			length: DEFAULT_SUMMARY_LENGTH,
+			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
 			language: DEFAULT_OUTPUT_LANGUAGE,
 		});
@@ -284,7 +303,7 @@ async function summarizeFile() {
 	try {
 		const response = await window.api.summarizeFile({
 			filePath: selectedFilePath,
-			length: DEFAULT_SUMMARY_LENGTH,
+			length: summaryLength.value,
 			format: DEFAULT_SUMMARY_FORMAT,
 			language: DEFAULT_OUTPUT_LANGUAGE,
 		});

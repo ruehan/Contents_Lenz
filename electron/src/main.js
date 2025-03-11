@@ -68,11 +68,13 @@ app.on("window-all-closed", () => {
 // API 상태 확인
 ipcMain.handle("get-config", async () => {
 	try {
+		console.log("API 연결 확인 중:", API_URL);
 		const response = await axios.get(`${API_URL}/`);
+		console.log("API 연결 성공:", response.data);
 		return response.data;
 	} catch (error) {
-		console.error("API 연결 확인 오류:", error);
-		return { error: error.message };
+		console.error("API 연결 확인 오류:", error.message);
+		return { error: error.message || "API 서버에 연결할 수 없습니다." };
 	}
 });
 
