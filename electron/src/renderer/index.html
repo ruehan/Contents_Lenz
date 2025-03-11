@@ -5,111 +5,143 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Contents Lenz</title>
 		<link rel="stylesheet" href="styles.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 	</head>
 	<body>
 		<div class="app-container">
 			<header class="app-header">
-				<h1>Contents Lenz</h1>
-				<p>AI 기반 콘텐츠 요약 및 분석 도구</p>
+				<div class="logo-container">
+					<h1>Contents Lenz</h1>
+					<p>AI 기반 콘텐츠 요약 및 분석 도구</p>
+				</div>
+				<div id="apiStatus" class="api-status">API 상태: 확인 중...</div>
 			</header>
 
-			<div class="settings-bar">
-				<div id="apiStatus" class="api-status">API 상태: 확인 중...</div>
-			</div>
-
 			<main class="app-main">
-				<div class="tabs">
-					<button id="textTabBtn" class="tab-button active">텍스트 입력</button>
-					<button id="fileTabBtn" class="tab-button">파일 업로드</button>
-					<button id="urlTabBtn" class="tab-button">URL 입력</button>
-				</div>
-
-				<div id="textInputTab" class="tab-content">
-					<div class="form-group">
-						<label for="inputText">요약할 텍스트:</label>
-						<textarea id="inputText" rows="10" placeholder="여기에 요약할 텍스트를 입력하세요..."></textarea>
-					</div>
-				</div>
-
-				<div id="fileInputTab" class="tab-content hidden">
-					<div class="file-upload-container">
-						<button id="selectFileBtn" class="primary-button">파일 선택</button>
-						<div id="selectedFile" class="selected-file">선택된 파일 없음</div>
-					</div>
-				</div>
-
-				<div id="urlInputTab" class="tab-content hidden">
-					<div class="form-group">
-						<label for="inputUrl">웹 페이지 URL:</label>
-						<div class="url-input-container">
-							<input type="text" id="inputUrl" placeholder="https://example.com" />
-							<button id="fetchUrlBtn" class="secondary-button">가져오기</button>
+				<div class="main-content">
+					<div class="input-section">
+						<div class="tabs">
+							<button id="textTabBtn" class="tab-button active"><i class="fas fa-font"></i> 텍스트 입력</button>
+							<button id="fileTabBtn" class="tab-button"><i class="fas fa-file-alt"></i> 파일 업로드</button>
+							<button id="urlTabBtn" class="tab-button"><i class="fas fa-globe"></i> URL 입력</button>
 						</div>
-						<div id="urlPreview" class="url-preview hidden">
-							<h4 id="urlTitle" class="url-title"></h4>
-							<div id="urlContent" class="url-content"></div>
+
+						<div id="textInputTab" class="tab-content">
+							<div class="form-group">
+								<label for="inputText">요약할 텍스트:</label>
+								<textarea id="inputText" rows="10" placeholder="여기에 요약할 텍스트를 입력하세요..."></textarea>
+							</div>
 						</div>
-					</div>
-				</div>
 
-				<div class="button-container">
-					<button id="summarizeBtn" class="primary-button">요약하기</button>
-					<button id="extractKeywordsBtn" class="secondary-button">키워드 추출</button>
-				</div>
+						<div id="fileInputTab" class="tab-content hidden">
+							<div class="file-upload-container">
+								<button id="selectFileBtn" class="primary-button"><i class="fas fa-file-upload"></i> 파일 선택</button>
+								<div id="selectedFile" class="selected-file">선택된 파일 없음</div>
+							</div>
+						</div>
 
-				<div class="settings-panel">
-					<h3>요약 설정</h3>
-					<div class="form-group">
-						<label for="summaryLength">요약 길이:</label>
-						<select id="summaryLength" class="select-input">
-							<option value="short">짧게</option>
-							<option value="medium" selected>중간</option>
-							<option value="long">길게</option>
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="outputLanguage">출력 언어:</label>
-						<select id="outputLanguage" class="select-input">
-							<option value="auto" selected>자동 감지</option>
-							<option value="ko">한국어</option>
-							<option value="en">영어</option>
-							<option value="ja">일본어</option>
-							<option value="zh">중국어</option>
-							<option value="es">스페인어</option>
-							<option value="fr">프랑스어</option>
-							<option value="de">독일어</option>
-							<option value="ru">러시아어</option>
-							<option value="pt">포르투갈어</option>
-							<option value="it">이탈리아어</option>
-							<option value="nl">네덜란드어</option>
-							<option value="ar">아랍어</option>
-							<option value="hi">힌디어</option>
-							<option value="vi">베트남어</option>
-							<option value="th">태국어</option>
-						</select>
-					</div>
-				</div>
+						<div id="urlInputTab" class="tab-content hidden">
+							<div class="form-group">
+								<label for="inputUrl">웹 페이지 URL:</label>
+								<div class="url-input-container">
+									<input type="text" id="inputUrl" placeholder="https://example.com" />
+									<button id="fetchUrlBtn" class="secondary-button"><i class="fas fa-download"></i> 가져오기</button>
+								</div>
+								<div id="urlPreview" class="url-preview hidden">
+									<h4 id="urlTitle" class="url-title"></h4>
+									<div id="urlContent" class="url-content"></div>
+								</div>
+							</div>
+						</div>
 
-				<div id="loadingIndicator" class="loading-indicator hidden">
-					<div class="spinner"></div>
-					<p>처리 중...</p>
-				</div>
+						<div class="settings-panel">
+							<h3><i class="fas fa-cog"></i> 요약 설정</h3>
+							<div class="settings-grid">
+								<div class="form-group">
+									<label for="summaryLength">요약 길이:</label>
+									<select id="summaryLength" class="select-input">
+										<option value="short">짧게</option>
+										<option value="medium" selected>중간</option>
+										<option value="long">길게</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label for="outputLanguage">출력 언어:</label>
+									<select id="outputLanguage" class="select-input">
+										<option value="auto" selected>자동 감지</option>
+										<option value="ko">한국어</option>
+										<option value="en">영어</option>
+										<option value="ja">일본어</option>
+										<option value="zh">중국어</option>
+										<option value="es">스페인어</option>
+										<option value="fr">프랑스어</option>
+										<option value="de">독일어</option>
+										<option value="ru">러시아어</option>
+										<option value="pt">포르투갈어</option>
+										<option value="it">이탈리아어</option>
+										<option value="nl">네덜란드어</option>
+										<option value="ar">아랍어</option>
+										<option value="hi">힌디어</option>
+										<option value="vi">베트남어</option>
+										<option value="th">태국어</option>
+									</select>
+								</div>
+							</div>
+						</div>
 
-				<div id="resultContainer" class="result-container hidden">
-					<div class="result-header">
-						<h3>요약 결과</h3>
-						<div class="result-actions">
-							<button id="copyResultBtn" class="icon-button">📋 복사</button>
-							<button id="saveResultBtn" class="icon-button">💾 저장</button>
+						<div class="button-container">
+							<button id="summarizeBtn" class="primary-button"><i class="fas fa-magic"></i> 요약하기</button>
+							<button id="extractKeywordsBtn" class="secondary-button"><i class="fas fa-key"></i> 키워드 추출</button>
 						</div>
 					</div>
-					<div id="detectedLanguage" class="detected-language"></div>
-					<div id="resultContent" class="result-content"></div>
-				</div>
 
-				<div id="keywordsContainer" class="keywords-container hidden">
-					<h3>추출된 키워드</h3>
-					<div id="keywordsList" class="keywords-list"></div>
+					<div class="output-section">
+						<div id="loadingIndicator" class="loading-indicator hidden">
+							<div class="spinner"></div>
+							<p>처리 중...</p>
+						</div>
+
+						<div id="resultContainer" class="result-container">
+							<div class="result-header">
+								<h3><i class="fas fa-file-alt"></i> 요약 결과</h3>
+								<div class="result-actions">
+									<button id="copyResultBtn" class="icon-button" title="복사">
+										<i class="fas fa-copy"></i>
+									</button>
+									<button id="saveResultBtn" class="icon-button" title="저장">
+										<i class="fas fa-save"></i>
+									</button>
+								</div>
+							</div>
+							<div id="detectedLanguage" class="detected-language">감지된 언어: -</div>
+							<div id="resultContent" class="result-content empty-content">
+								<p class="placeholder-text">왼쪽에서 텍스트를 입력하거나 파일을 업로드하거나 URL을 입력한 후 요약하기 버튼을 클릭하세요.</p>
+							</div>
+
+							<div id="keywordsSection" class="keywords-section">
+								<div class="keywords-header">
+									<h4><i class="fas fa-tags"></i> 관련 키워드</h4>
+								</div>
+								<div id="keywordsList" class="keywords-list empty-keywords">
+									<span class="keyword placeholder-keyword">키워드</span>
+									<span class="keyword placeholder-keyword">추출</span>
+									<span class="keyword placeholder-keyword">예시</span>
+								</div>
+							</div>
+						</div>
+
+						<div id="keywordsContainer" class="keywords-container hidden">
+							<div class="result-header">
+								<h3><i class="fas fa-tags"></i> 추출된 키워드</h3>
+								<div class="result-actions">
+									<button id="copyKeywordsBtn" class="icon-button" title="복사">
+										<i class="fas fa-copy"></i>
+									</button>
+								</div>
+							</div>
+							<div id="keywordsOnlyList" class="keywords-list"></div>
+						</div>
+					</div>
 				</div>
 			</main>
 

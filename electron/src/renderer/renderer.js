@@ -35,7 +35,10 @@ const copyResultBtn = document.getElementById("copyResultBtn");
 const saveResultBtn = document.getElementById("saveResultBtn");
 
 const keywordsContainer = document.getElementById("keywordsContainer");
+const keywordsSection = document.getElementById("keywordsSection");
 const keywordsList = document.getElementById("keywordsList");
+const keywordsOnlyList = document.getElementById("keywordsOnlyList");
+const copyKeywordsBtn = document.getElementById("copyKeywordsBtn");
 
 // 상태 변수
 let selectedFilePath = null;
@@ -55,10 +58,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		if (!storedApiUrl.error) {
 			apiStatus.textContent = "API 상태: 연결됨";
-			apiStatus.style.color = "#27ae60";
+			apiStatus.style.color = "#10b507";
 		} else {
 			apiStatus.textContent = "API 상태: 연결 안됨";
-			apiStatus.style.color = "#e74c3c";
+			apiStatus.style.color = "#0dde0d";
 			console.error("API 연결 오류:", storedApiUrl.error);
 		}
 	} catch (error) {
@@ -166,6 +169,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await window.api.saveResult(currentResult);
 		}
 	});
+
+	if (copyKeywordsBtn) {
+		copyKeywordsBtn.addEventListener("click", () => {
+			const keywords = Array.from(keywordsOnlyList.querySelectorAll(".keyword"))
+				.map((el) => el.textContent)
+				.join(", ");
+
+			if (keywords) {
+				navigator.clipboard.writeText(keywords).then(
+					() => {
+						// 복사 성공
+						const originalText = copyKeywordsBtn.innerHTML;
+						copyKeywordsBtn.innerHTML = '<i class="fas fa-check"></i>';
+						setTimeout(() => {
+							copyKeywordsBtn.innerHTML = originalText;
+						}, 2000);
+					},
+					(err) => {
+						console.error("클립보드 복사 실패:", err);
+					}
+				);
+			}
+		});
+	}
 });
 
 // URL 콘텐츠 가져오기 함수
@@ -210,7 +237,7 @@ async function summarizeUrl() {
 		return;
 	}
 
-	hideResults();
+	resetResults();
 	showLoading(true);
 
 	try {
@@ -228,18 +255,23 @@ async function summarizeUrl() {
 			return;
 		}
 
+		resultContent.innerHTML = "";
 		resultContent.textContent = response.summary;
+		resultContent.classList.remove("empty-content");
 		currentResult = response.summary;
 
 		if (response.detected_language) {
 			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
-			detectedLanguage.classList.remove("hidden");
 		} else {
-			detectedLanguage.classList.add("hidden");
+			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		resultContainer.classList.remove("hidden");
 		keywordsContainer.classList.add("hidden");
+
+		// 요약 후 자동으로 키워드 추출
+		if (scrapedContent) {
+			await extractKeywordsForSummary(scrapedContent);
+		}
 	} catch (error) {
 		showLoading(false);
 		alert(`URL 요약 중 오류가 발생했습니다: ${error.message}`);
@@ -254,7 +286,7 @@ async function summarizeText() {
 		return;
 	}
 
-	hideResults();
+	resetResults();
 	showLoading(true);
 
 	try {
@@ -272,18 +304,21 @@ async function summarizeText() {
 			return;
 		}
 
+		resultContent.innerHTML = "";
 		resultContent.textContent = response.summary;
+		resultContent.classList.remove("empty-content");
 		currentResult = response.summary;
 
 		if (response.detected_language) {
 			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
-			detectedLanguage.classList.remove("hidden");
 		} else {
-			detectedLanguage.classList.add("hidden");
+			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		resultContainer.classList.remove("hidden");
 		keywordsContainer.classList.add("hidden");
+
+		// 요약 후 자동으로 키워드 추출
+		await extractKeywordsForSummary(text);
 	} catch (error) {
 		showLoading(false);
 		alert(`요약 중 오류가 발생했습니다: ${error.message}`);
@@ -297,7 +332,7 @@ async function summarizeFile() {
 		return;
 	}
 
-	hideResults();
+	resetResults();
 	showLoading(true);
 
 	try {
@@ -315,18 +350,21 @@ async function summarizeFile() {
 			return;
 		}
 
+		resultContent.innerHTML = "";
 		resultContent.textContent = response.summary;
+		resultContent.classList.remove("empty-content");
 		currentResult = response.summary;
 
 		if (response.detected_language) {
 			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
-			detectedLanguage.classList.remove("hidden");
 		} else {
-			detectedLanguage.classList.add("hidden");
+			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		resultContainer.classList.remove("hidden");
 		keywordsContainer.classList.add("hidden");
+
+		// 파일 내용은 접근할 수 없으므로 요약 결과로 키워드 추출
+		await extractKeywordsForSummary(response.summary);
 	} catch (error) {
 		showLoading(false);
 		alert(`파일 요약 중 오류가 발생했습니다: ${error.message}`);
@@ -341,12 +379,45 @@ async function extractKeywords() {
 		return;
 	}
 
-	await extractKeywordsFromText(text);
+	await extractKeywordsFromText(text, true);
+}
+
+// 요약 결과를 위한 키워드 추출 함수
+async function extractKeywordsForSummary(text) {
+	try {
+		const response = await window.api.extractKeywords({
+			text: text,
+			count: 8,
+			language: outputLanguage.value,
+		});
+
+		if (response.error) {
+			console.error(`키워드 추출 오류: ${response.error}`);
+			keywordsList.innerHTML = `<span class="keyword placeholder-keyword">키워드 추출 실패</span>`;
+			return;
+		}
+
+		keywordsList.innerHTML = "";
+		keywordsList.classList.remove("empty-keywords");
+
+		response.keywords.forEach((keyword) => {
+			const keywordElement = document.createElement("span");
+			keywordElement.className = "keyword";
+			keywordElement.textContent = keyword;
+			keywordsList.appendChild(keywordElement);
+		});
+	} catch (error) {
+		console.error(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
+		keywordsList.innerHTML = `<span class="keyword placeholder-keyword">키워드 추출 실패</span>`;
+	}
 }
 
 // 텍스트에서 키워드 추출 함수
-async function extractKeywordsFromText(text) {
-	hideResults();
+async function extractKeywordsFromText(text, showAsMain = false) {
+	if (showAsMain) {
+		resetResults();
+	}
+
 	showLoading(true);
 
 	try {
@@ -363,16 +434,28 @@ async function extractKeywordsFromText(text) {
 			return;
 		}
 
-		keywordsList.innerHTML = "";
-		response.keywords.forEach((keyword) => {
-			const keywordElement = document.createElement("span");
-			keywordElement.className = "keyword";
-			keywordElement.textContent = keyword;
-			keywordsList.appendChild(keywordElement);
-		});
+		if (showAsMain) {
+			keywordsOnlyList.innerHTML = "";
+			response.keywords.forEach((keyword) => {
+				const keywordElement = document.createElement("span");
+				keywordElement.className = "keyword";
+				keywordElement.textContent = keyword;
+				keywordsOnlyList.appendChild(keywordElement);
+			});
 
-		keywordsContainer.classList.remove("hidden");
-		resultContainer.classList.add("hidden");
+			resultContainer.classList.add("hidden");
+			keywordsContainer.classList.remove("hidden");
+		} else {
+			keywordsList.innerHTML = "";
+			keywordsList.classList.remove("empty-keywords");
+
+			response.keywords.forEach((keyword) => {
+				const keywordElement = document.createElement("span");
+				keywordElement.className = "keyword";
+				keywordElement.textContent = keyword;
+				keywordsList.appendChild(keywordElement);
+			});
+		}
 	} catch (error) {
 		showLoading(false);
 		alert(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
@@ -392,8 +475,27 @@ function showLoading(show) {
 	}
 }
 
-// 결과 숨기기 함수
-function hideResults() {
-	resultContainer.classList.add("hidden");
+// 결과 초기화 함수
+function resetResults() {
+	// 요약 결과 초기화
+	resultContent.innerHTML = `<p class="placeholder-text">처리 중...</p>`;
+	resultContent.classList.add("empty-content");
+	detectedLanguage.textContent = "감지된 언어: -";
+
+	// 키워드 초기화
+	keywordsList.innerHTML = `
+		<span class="keyword placeholder-keyword">키워드</span>
+		<span class="keyword placeholder-keyword">추출</span>
+		<span class="keyword placeholder-keyword">예시</span>
+	`;
+	keywordsList.classList.add("empty-keywords");
+
+	// 키워드 전용 컨테이너 숨기기
 	keywordsContainer.classList.add("hidden");
+}
+
+// 결과 숨기기 함수 (더 이상 사용하지 않음)
+function hideResults() {
+	// 이 함수는 더 이상 사용하지 않지만 호환성을 위해 유지
+	resetResults();
 }
