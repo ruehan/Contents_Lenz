@@ -27,3 +27,28 @@ output/
 # 시스템 파일
 .DS_Store
 Thumbs.db 
+
+# 빌드 파일
+dist/
+
+# 배포 파일
+release/
+
+# 임시 파일
+temp/
+
+# 파일 패턴
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.pyc
+*.pyo
+
+/electron/node_modules
+/electron/dist
+/electron/build
+/electron/release
+/electron/temp
+/electron/output
