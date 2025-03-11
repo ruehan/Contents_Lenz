@@ -10,6 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uvicorn
+import requests
+from bs4 import BeautifulSoup
+import re
 
 from src.models.openai_client import OpenAIClient
 from src.utils.file_handler import FileHandler
@@ -27,6 +30,11 @@ class KeywordsResponse(BaseModel):
 class LanguageResponse(BaseModel):
     language: str
     language_name: str
+
+class WebContentResponse(BaseModel):
+    title: str
+    content: str
+    url: str
 
 class ErrorResponse(BaseModel):
     error: str
@@ -63,6 +71,106 @@ async def root():
         "docs_url": "/docs",
         "redoc_url": "/redoc"
     }
+
+@app.post("/scrape-url", response_model=WebContentResponse)
+async def scrape_url(
+    url: str = Form(...)
+):
+    """URL에서 웹 콘텐츠 스크래핑 API"""
+    if not url.strip():
+        raise HTTPException(status_code=400, detail="스크래핑할 URL을 입력하세요.")
+    
+    # URL 형식 검증
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    try:
+        # 웹 페이지 가져오기
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()  # 오류 발생 시 예외 발생
+        
+        # HTML 파싱
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # 제목 추출
+        title = soup.title.string if soup.title else "제목 없음"
+        
+        # 본문 추출 (메타 설명, 주요 텍스트 블록)
+        content = ""
+        
+        # 메타 설명 추가
+        meta_desc = soup.find('meta', attrs={'name': 'description'})
+        if meta_desc and meta_desc.get('content'):
+            content += meta_desc.get('content') + "\n\n"
+        
+        # 주요 콘텐츠 추출 (p, h1-h6, article, section 태그 등)
+        for tag in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'section']):
+            text = tag.get_text(strip=True)
+            if text and len(text) > 20:  # 짧은 텍스트는 건너뜀
+                content += text + "\n\n"
+        
+        # 콘텐츠 정리 (중복 줄바꿈 제거 등)
+        content = re.sub(r'\n{3,}', '\n\n', content).strip()
+        
+        if not content:
+            raise HTTPException(status_code=400, detail="웹 페이지에서 콘텐츠를 추출할 수 없습니다.")
+        
+        return {
+            "title": title,
+            "content": content,
+            "url": url
+        }
+    
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=400, detail=f"웹 페이지 접근 중 오류가 발생했습니다: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"웹 스크래핑 중 오류가 발생했습니다: {str(e)}")
+
+@app.post("/summarize/url", response_model=SummaryResponse)
+async def summarize_url(
+    url: str = Form(...),
+    length: str = Form("medium"),
+    format: str = Form("paragraph"),
+    language: str = Form("auto")
+):
+    """URL 콘텐츠 요약 API"""
+    if not openai_client:
+        raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
+    
+    if not url.strip():
+        raise HTTPException(status_code=400, detail="요약할 URL을 입력하세요.")
+    
+    try:
+        # 웹 콘텐츠 스크래핑
+        web_content = await scrape_url(url=url)
+        text = f"제목: {web_content['title']}\n\n{web_content['content']}"
+        
+        # 언어 감지 (자동 모드인 경우)
+        detected_language = None
+        if language == 'auto':
+            try:
+                detected_language = openai_client.detect_language(text)
+            except Exception as e:
+                print(f"언어 감지 중 오류가 발생했습니다: {str(e)}")
+        
+        # 텍스트 요약
+        summary = openai_client.summarize_text(text, length, format, language)
+        
+        response = {
+            "summary": summary
+        }
+        
+        if detected_language:
+            response["detected_language"] = detected_language
+            response["detected_language_name"] = SUPPORTED_LANGUAGES.get(detected_language, detected_language)
+        
+        return response
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"URL 요약 중 오류가 발생했습니다: {str(e)}")
 
 @app.post("/summarize/text", response_model=SummaryResponse)
 async def summarize_text(

@@ -57,8 +57,8 @@ body {
 
 .settings-panel {
 	background-color: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 5px;
+	border: 1px solid #eee;
+	border-radius: 4px;
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -77,23 +77,24 @@ body {
 /* 메인 콘텐츠 */
 .app-main {
 	flex: 1;
+	margin-bottom: 20px;
 }
 
 /* 탭 */
 .tabs {
 	display: flex;
 	margin-bottom: 20px;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid #eee;
 }
 
 .tab-button {
 	padding: 10px 20px;
-	background: none;
+	background-color: transparent;
 	border: none;
 	cursor: pointer;
 	font-size: 1rem;
 	color: #7f8c8d;
-	transition: all 0.3s;
+	transition: all 0.3s ease;
 }
 
 .tab-button:hover {
@@ -101,7 +102,7 @@ body {
 }
 
 .tab-button.active {
-	color: #3498db;
+	color: #2c3e50;
 	border-bottom: 2px solid #3498db;
 }
 
@@ -110,24 +111,23 @@ body {
 }
 
 .hidden {
-	display: none;
+	display: none !important;
 }
 
 /* 폼 요소 */
 .form-group {
-	margin-bottom: 15px;
+	margin-bottom: 20px;
 }
 
 .form-group label {
 	display: block;
-	margin-bottom: 5px;
+	margin-bottom: 8px;
 	font-weight: 600;
 	color: #2c3e50;
 }
 
 .form-group input,
-.form-group select,
-.form-group textarea {
+.form-group select {
 	width: 100%;
 	padding: 10px;
 	border: 1px solid #ddd;
@@ -136,8 +136,12 @@ body {
 }
 
 .form-group textarea {
+	width: 100%;
+	height: 200px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
 	resize: vertical;
-	min-height: 150px;
 }
 
 /* 파일 업로드 */
@@ -145,23 +149,24 @@ body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	gap: 15px;
 	padding: 30px;
 	border: 2px dashed #ddd;
-	border-radius: 5px;
-	text-align: center;
+	border-radius: 4px;
 }
 
 .selected-file {
-	margin-top: 15px;
+	margin-top: 10px;
 	font-size: 0.9rem;
 	color: #7f8c8d;
+	word-break: break-all;
 }
 
 /* 옵션 컨테이너 */
 .options-container {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 20px;
+	gap: 15px;
 	margin-bottom: 20px;
 }
 
@@ -180,7 +185,7 @@ body {
 	border-radius: 4px;
 	cursor: pointer;
 	font-size: 1rem;
-	transition: background-color 0.3s;
+	transition: background-color 0.3s ease;
 }
 
 .primary-button:hover {
@@ -191,24 +196,26 @@ body {
 	padding: 10px 20px;
 	background-color: #ecf0f1;
 	color: #2c3e50;
-	border: 1px solid #ddd;
+	border: none;
 	border-radius: 4px;
 	cursor: pointer;
 	font-size: 1rem;
-	transition: all 0.3s;
+	transition: background-color 0.3s ease;
 }
 
 .secondary-button:hover {
-	background-color: #dfe6e9;
+	background-color: #bdc3c7;
 }
 
 .icon-button {
-	background: none;
+	background-color: transparent;
 	border: none;
 	cursor: pointer;
 	font-size: 1rem;
 	color: #7f8c8d;
-	transition: color 0.3s;
+	display: flex;
+	align-items: center;
+	gap: 5px;
 }
 
 .icon-button:hover {
@@ -221,7 +228,7 @@ body {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 30px;
+	margin: 20px 0;
 }
 
 .spinner {
@@ -231,7 +238,7 @@ body {
 	border-radius: 50%;
 	border-top-color: #3498db;
 	animation: spin 1s ease-in-out infinite;
-	margin-bottom: 15px;
+	margin-bottom: 10px;
 }
 
 @keyframes spin {
@@ -243,8 +250,8 @@ body {
 /* 결과 컨테이너 */
 .result-container {
 	background-color: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 5px;
+	border: 1px solid #eee;
+	border-radius: 4px;
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -254,6 +261,8 @@ body {
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 15px;
+	border-bottom: 1px solid #eee;
+	padding-bottom: 10px;
 }
 
 .result-actions {
@@ -263,20 +272,21 @@ body {
 
 .detected-language {
 	font-size: 0.9rem;
-	color: #7f8c8d;
+	color: #3498db;
+	font-style: italic;
 	margin-bottom: 10px;
 }
 
 .result-content {
-	white-space: pre-wrap;
-	line-height: 1.8;
+	white-space: pre-line;
+	line-height: 1.6;
 }
 
 /* 키워드 컨테이너 */
 .keywords-container {
 	background-color: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 5px;
+	border: 1px solid #eee;
+	border-radius: 4px;
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -301,7 +311,46 @@ body {
 	text-align: center;
 	padding: 20px 0;
 	border-top: 1px solid #eee;
-	margin-top: 20px;
 	color: #7f8c8d;
 	font-size: 0.9rem;
+}
+
+/* URL 입력 관련 스타일 */
+.url-input-container {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.url-input-container input {
+	flex: 1;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 1rem;
+}
+
+.url-preview {
+	background-color: #f9f9f9;
+	border: 1px solid #eee;
+	border-radius: 4px;
+	padding: 15px;
+	margin-top: 15px;
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.url-title {
+	font-size: 1.2rem;
+	color: #2c3e50;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #eee;
+	padding-bottom: 5px;
+}
+
+.url-content {
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: #555;
+	white-space: pre-line;
 }

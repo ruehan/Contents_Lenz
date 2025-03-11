@@ -10,6 +10,7 @@ const store = new Store();
 
 // API 서버 URL (고정)
 const API_URL = "https://contents-lenz.onrender.com";
+// const API_URL = "http://localhost:8000";
 
 // 개발 모드 확인
 const isDev = process.argv.includes("--dev");
@@ -72,6 +73,60 @@ ipcMain.handle("get-config", async () => {
 	} catch (error) {
 		console.error("API 연결 확인 오류:", error);
 		return { error: error.message };
+	}
+});
+
+// 웹 스크래핑 API
+ipcMain.handle("scrape-url", async (event, { url }) => {
+	if (!url) {
+		return { error: "URL이 제공되지 않았습니다." };
+	}
+
+	try {
+		// URL 유효성 검사
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
+			url = "https://" + url;
+		}
+
+		const formData = new FormData();
+		formData.append("url", url);
+
+		const response = await axios.post(`${API_URL}/scrape-url`, formData, {
+			headers: {
+				...formData.getHeaders(),
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("URL 스크래핑 오류:", error);
+		return { error: error.response?.data?.detail || error.message };
+	}
+});
+
+// URL 요약 API
+ipcMain.handle("summarize-url", async (event, { url, length, format, language }) => {
+	if (!url) {
+		return { error: "URL이 제공되지 않았습니다." };
+	}
+
+	try {
+		const formData = new FormData();
+		formData.append("url", url);
+		formData.append("length", length || "medium");
+		formData.append("format", format || "paragraph");
+		formData.append("language", language || "auto");
+
+		const response = await axios.post(`${API_URL}/summarize/url`, formData, {
+			headers: {
+				...formData.getHeaders(),
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("URL 요약 오류:", error);
+		return { error: error.response?.data?.detail || error.message };
 	}
 });
 
@@ -162,11 +217,7 @@ ipcMain.handle("select-file", async () => {
 		],
 	});
 
-	if (result.canceled) {
-		return { canceled: true };
-	}
-
-	return { filePath: result.filePaths[0] };
+	return { canceled: result.canceled, filePaths: result.filePaths };
 });
 
 // 저장 다이얼로그

@@ -3,12 +3,19 @@ const apiStatus = document.getElementById("apiStatus");
 
 const textTabBtn = document.getElementById("textTabBtn");
 const fileTabBtn = document.getElementById("fileTabBtn");
+const urlTabBtn = document.getElementById("urlTabBtn");
 const textInputTab = document.getElementById("textInputTab");
 const fileInputTab = document.getElementById("fileInputTab");
+const urlInputTab = document.getElementById("urlInputTab");
 
 const inputText = document.getElementById("inputText");
 const selectFileBtn = document.getElementById("selectFileBtn");
 const selectedFile = document.getElementById("selectedFile");
+const inputUrl = document.getElementById("inputUrl");
+const fetchUrlBtn = document.getElementById("fetchUrlBtn");
+const urlPreview = document.getElementById("urlPreview");
+const urlTitle = document.getElementById("urlTitle");
+const urlContent = document.getElementById("urlContent");
 
 // 기본 요약 옵션 (UI에서 제거됨)
 const DEFAULT_SUMMARY_LENGTH = "medium";
@@ -31,6 +38,8 @@ const keywordsList = document.getElementById("keywordsList");
 // 상태 변수
 let selectedFilePath = null;
 let currentResult = "";
+let currentUrl = "";
+let scrapedContent = "";
 
 // 초기화
 document.addEventListener("DOMContentLoaded", async () => {
@@ -48,15 +57,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 	textTabBtn.addEventListener("click", () => {
 		textTabBtn.classList.add("active");
 		fileTabBtn.classList.remove("active");
+		urlTabBtn.classList.remove("active");
 		textInputTab.classList.remove("hidden");
 		fileInputTab.classList.add("hidden");
+		urlInputTab.classList.add("hidden");
 	});
 
 	fileTabBtn.addEventListener("click", () => {
 		fileTabBtn.classList.add("active");
 		textTabBtn.classList.remove("active");
+		urlTabBtn.classList.remove("active");
 		fileInputTab.classList.remove("hidden");
 		textInputTab.classList.add("hidden");
+		urlInputTab.classList.add("hidden");
+	});
+
+	urlTabBtn.addEventListener("click", () => {
+		urlTabBtn.classList.add("active");
+		textTabBtn.classList.remove("active");
+		fileTabBtn.classList.remove("active");
+		urlInputTab.classList.remove("hidden");
+		textInputTab.classList.add("hidden");
+		fileInputTab.classList.add("hidden");
 	});
 
 	selectFileBtn.addEventListener("click", async () => {
@@ -68,8 +90,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 
+	fetchUrlBtn.addEventListener("click", async () => {
+		await fetchUrlContent();
+	});
+
 	summarizeBtn.addEventListener("click", async () => {
-		if (textInputTab.classList.contains("hidden")) {
+		if (textInputTab.classList.contains("hidden") && fileInputTab.classList.contains("hidden")) {
+			// URL 입력 탭이 활성화된 경우
+			await summarizeUrl();
+		} else if (textInputTab.classList.contains("hidden")) {
 			// 파일 업로드 탭이 활성화된 경우
 			await summarizeFile();
 		} else {
@@ -79,7 +108,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 	});
 
 	extractKeywordsBtn.addEventListener("click", async () => {
-		await extractKeywords();
+		if (textInputTab.classList.contains("hidden") && fileInputTab.classList.contains("hidden")) {
+			// URL 입력 탭이 활성화된 경우
+			if (scrapedContent) {
+				await extractKeywordsFromText(scrapedContent);
+			} else {
+				alert("먼저 URL 콘텐츠를 가져오세요.");
+			}
+		} else if (textInputTab.classList.contains("hidden")) {
+			// 파일 업로드 탭이 활성화된 경우
+			alert("파일에서 키워드 추출은 아직 지원하지 않습니다.");
+		} else {
+			// 텍스트 입력 탭이 활성화된 경우
+			await extractKeywords();
+		}
 	});
 
 	copyResultBtn.addEventListener("click", () => {
@@ -106,6 +148,84 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 });
+
+// URL 콘텐츠 가져오기 함수
+async function fetchUrlContent() {
+	const url = inputUrl.value.trim();
+	if (!url) {
+		alert("URL을 입력하세요.");
+		return;
+	}
+
+	showLoading(true);
+	urlPreview.classList.add("hidden");
+
+	try {
+		const response = await window.api.scrapeUrl({ url });
+
+		showLoading(false);
+
+		if (response.error) {
+			alert(`URL 콘텐츠 가져오기 오류: ${response.error}`);
+			return;
+		}
+
+		currentUrl = response.url;
+		scrapedContent = response.content;
+
+		urlTitle.textContent = response.title;
+		urlContent.textContent = response.content.length > 500 ? response.content.substring(0, 500) + "..." : response.content;
+
+		urlPreview.classList.remove("hidden");
+	} catch (error) {
+		showLoading(false);
+		alert(`URL 콘텐츠 가져오기 중 오류가 발생했습니다: ${error.message}`);
+	}
+}
+
+// URL 요약 함수
+async function summarizeUrl() {
+	const url = inputUrl.value.trim();
+	if (!url) {
+		alert("요약할 URL을 입력하세요.");
+		return;
+	}
+
+	hideResults();
+	showLoading(true);
+
+	try {
+		const response = await window.api.summarizeUrl({
+			url: url,
+			length: DEFAULT_SUMMARY_LENGTH,
+			format: DEFAULT_SUMMARY_FORMAT,
+			language: DEFAULT_OUTPUT_LANGUAGE,
+		});
+
+		showLoading(false);
+
+		if (response.error) {
+			alert(`URL 요약 오류: ${response.error}`);
+			return;
+		}
+
+		resultContent.textContent = response.summary;
+		currentResult = response.summary;
+
+		if (response.detected_language) {
+			detectedLanguage.textContent = `감지된 언어: ${response.detected_language_name || response.detected_language}`;
+			detectedLanguage.classList.remove("hidden");
+		} else {
+			detectedLanguage.classList.add("hidden");
+		}
+
+		resultContainer.classList.remove("hidden");
+		keywordsContainer.classList.add("hidden");
+	} catch (error) {
+		showLoading(false);
+		alert(`URL 요약 중 오류가 발생했습니다: ${error.message}`);
+	}
+}
 
 // 텍스트 요약 함수
 async function summarizeText() {
@@ -202,6 +322,11 @@ async function extractKeywords() {
 		return;
 	}
 
+	await extractKeywordsFromText(text);
+}
+
+// 텍스트에서 키워드 추출 함수
+async function extractKeywordsFromText(text) {
 	hideResults();
 	showLoading(true);
 

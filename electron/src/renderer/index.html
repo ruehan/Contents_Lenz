@@ -21,6 +21,7 @@
 				<div class="tabs">
 					<button id="textTabBtn" class="tab-button active">텍스트 입력</button>
 					<button id="fileTabBtn" class="tab-button">파일 업로드</button>
+					<button id="urlTabBtn" class="tab-button">URL 입력</button>
 				</div>
 
 				<div id="textInputTab" class="tab-content">
@@ -34,6 +35,20 @@
 					<div class="file-upload-container">
 						<button id="selectFileBtn" class="primary-button">파일 선택</button>
 						<div id="selectedFile" class="selected-file">선택된 파일 없음</div>
+					</div>
+				</div>
+
+				<div id="urlInputTab" class="tab-content hidden">
+					<div class="form-group">
+						<label for="inputUrl">웹 페이지 URL:</label>
+						<div class="url-input-container">
+							<input type="text" id="inputUrl" placeholder="https://example.com" />
+							<button id="fetchUrlBtn" class="secondary-button">가져오기</button>
+						</div>
+						<div id="urlPreview" class="url-preview hidden">
+							<h4 id="urlTitle" class="url-title"></h4>
+							<div id="urlContent" class="url-content"></div>
+						</div>
 					</div>
 				</div>
 
