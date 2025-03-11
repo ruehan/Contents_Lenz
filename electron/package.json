@@ -7,11 +7,11 @@
 		"start": "electron .",
 		"dev": "electron . --dev",
 		"build": "electron-builder",
-		"build:win": "electron-builder --win",
+		"build:win": "electron-builder --windows nsis:ia32",
 		"build:mac": "electron-builder --mac",
 		"build:linux": "electron-builder --linux"
 	},
-	"author": "",
+	"author": "ruehan",
 	"license": "MIT",
 	"devDependencies": {
 		"electron": "^28.1.0",
@@ -30,17 +30,21 @@
 		},
 		"files": [
 			"src/**/*",
-			"package.json"
+			"package.json",
+			"assets/**/*"
 		],
 		"mac": {
-			"category": "public.app-category.productivity"
+			"category": "public.app-category.productivity",
+			"icon": "assets/icons/icon.icns"
 		},
 		"win": {
-			"target": "nsis"
+			"target": "nsis",
+			"icon": "assets/icons/icon.ico"
 		},
 		"linux": {
 			"target": "AppImage",
-			"category": "Office"
+			"category": "Office",
+			"icon": "assets/icons"
 		}
 	}
 }

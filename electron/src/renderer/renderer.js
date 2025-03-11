@@ -25,7 +25,6 @@ const outputLanguage = document.getElementById("outputLanguage");
 const DEFAULT_SUMMARY_FORMAT = "paragraph";
 
 const summarizeBtn = document.getElementById("summarizeBtn");
-const extractKeywordsBtn = document.getElementById("extractKeywordsBtn");
 const loadingIndicator = document.getElementById("loadingIndicator");
 
 const resultContainer = document.getElementById("resultContainer");
@@ -34,11 +33,9 @@ const resultContent = document.getElementById("resultContent");
 const copyResultBtn = document.getElementById("copyResultBtn");
 const saveResultBtn = document.getElementById("saveResultBtn");
 
-const keywordsContainer = document.getElementById("keywordsContainer");
 const keywordsSection = document.getElementById("keywordsSection");
 const keywordsList = document.getElementById("keywordsList");
 const keywordsOnlyList = document.getElementById("keywordsOnlyList");
-const copyKeywordsBtn = document.getElementById("copyKeywordsBtn");
 
 // 상태 변수
 let selectedFilePath = null;
@@ -129,23 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 
-	extractKeywordsBtn.addEventListener("click", async () => {
-		if (textInputTab.classList.contains("hidden") && fileInputTab.classList.contains("hidden")) {
-			// URL 입력 탭이 활성화된 경우
-			if (scrapedContent) {
-				await extractKeywordsFromText(scrapedContent);
-			} else {
-				alert("먼저 URL 콘텐츠를 가져오세요.");
-			}
-		} else if (textInputTab.classList.contains("hidden")) {
-			// 파일 업로드 탭이 활성화된 경우
-			alert("파일에서 키워드 추출은 아직 지원하지 않습니다.");
-		} else {
-			// 텍스트 입력 탭이 활성화된 경우
-			await extractKeywords();
-		}
-	});
-
 	copyResultBtn.addEventListener("click", () => {
 		if (currentResult) {
 			navigator.clipboard.writeText(currentResult).then(
@@ -169,30 +149,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await window.api.saveResult(currentResult);
 		}
 	});
-
-	if (copyKeywordsBtn) {
-		copyKeywordsBtn.addEventListener("click", () => {
-			const keywords = Array.from(keywordsOnlyList.querySelectorAll(".keyword"))
-				.map((el) => el.textContent)
-				.join(", ");
-
-			if (keywords) {
-				navigator.clipboard.writeText(keywords).then(
-					() => {
-						// 복사 성공
-						const originalText = copyKeywordsBtn.innerHTML;
-						copyKeywordsBtn.innerHTML = '<i class="fas fa-check"></i>';
-						setTimeout(() => {
-							copyKeywordsBtn.innerHTML = originalText;
-						}, 2000);
-					},
-					(err) => {
-						console.error("클립보드 복사 실패:", err);
-					}
-				);
-			}
-		});
-	}
 });
 
 // URL 콘텐츠 가져오기 함수
@@ -203,12 +159,11 @@ async function fetchUrlContent() {
 		return;
 	}
 
-	showLoading(true);
 	urlPreview.classList.add("hidden");
+	showLoading(true, "웹 페이지 콘텐츠를 가져오는 중...");
 
 	try {
 		const response = await window.api.scrapeUrl({ url });
-
 		showLoading(false);
 
 		if (response.error) {
@@ -216,13 +171,11 @@ async function fetchUrlContent() {
 			return;
 		}
 
-		currentUrl = response.url;
-		scrapedContent = response.content;
-
-		urlTitle.textContent = response.title;
-		urlContent.textContent = response.content.length > 500 ? response.content.substring(0, 500) + "..." : response.content;
-
+		urlTitle.textContent = response.title || "제목 없음";
+		urlContent.textContent = response.content || "콘텐츠를 가져올 수 없습니다.";
 		urlPreview.classList.remove("hidden");
+		scrapedContent = response.content;
+		currentUrl = url;
 	} catch (error) {
 		showLoading(false);
 		alert(`URL 콘텐츠 가져오기 중 오류가 발생했습니다: ${error.message}`);
@@ -238,7 +191,7 @@ async function summarizeUrl() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "URL 콘텐츠 요약 중...");
 
 	try {
 		const response = await window.api.summarizeUrl({
@@ -266,8 +219,6 @@ async function summarizeUrl() {
 			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		keywordsContainer.classList.add("hidden");
-
 		// 요약 후 자동으로 키워드 추출
 		if (scrapedContent) {
 			await extractKeywordsForSummary(scrapedContent);
@@ -287,7 +238,7 @@ async function summarizeText() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "텍스트 요약 중...");
 
 	try {
 		const response = await window.api.summarizeText({
@@ -315,8 +266,6 @@ async function summarizeText() {
 			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		keywordsContainer.classList.add("hidden");
-
 		// 요약 후 자동으로 키워드 추출
 		await extractKeywordsForSummary(text);
 	} catch (error) {
@@ -333,7 +282,7 @@ async function summarizeFile() {
 	}
 
 	resetResults();
-	showLoading(true);
+	showLoading(true, "파일 내용 요약 중...");
 
 	try {
 		const response = await window.api.summarizeFile({
@@ -361,8 +310,6 @@ async function summarizeFile() {
 			detectedLanguage.textContent = "감지된 언어: -";
 		}
 
-		keywordsContainer.classList.add("hidden");
-
 		// 파일 내용은 접근할 수 없으므로 요약 결과로 키워드 추출
 		await extractKeywordsForSummary(response.summary);
 	} catch (error) {
@@ -371,25 +318,18 @@ async function summarizeFile() {
 	}
 }
 
-// 키워드 추출 함수
-async function extractKeywords() {
-	const text = inputText.value.trim();
-	if (!text) {
-		alert("키워드를 추출할 텍스트를 입력하세요.");
-		return;
-	}
-
-	await extractKeywordsFromText(text, true);
-}
-
 // 요약 결과를 위한 키워드 추출 함수
 async function extractKeywordsForSummary(text) {
 	try {
+		showLoading(true, "키워드 추출 중...");
+
 		const response = await window.api.extractKeywords({
 			text: text,
 			count: 8,
 			language: outputLanguage.value,
 		});
+
+		showLoading(false);
 
 		if (response.error) {
 			console.error(`키워드 추출 오류: ${response.error}`);
@@ -399,6 +339,7 @@ async function extractKeywordsForSummary(text) {
 
 		keywordsList.innerHTML = "";
 		keywordsList.classList.remove("empty-keywords");
+		keywordsSection.classList.remove("hidden");
 
 		response.keywords.forEach((keyword) => {
 			const keywordElement = document.createElement("span");
@@ -407,71 +348,25 @@ async function extractKeywordsForSummary(text) {
 			keywordsList.appendChild(keywordElement);
 		});
 	} catch (error) {
-		console.error(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
+		showLoading(false);
+		console.error(`키워드 추출 중 오류 발생: ${error.message}`);
 		keywordsList.innerHTML = `<span class="keyword placeholder-keyword">키워드 추출 실패</span>`;
 	}
 }
 
-// 텍스트에서 키워드 추출 함수
-async function extractKeywordsFromText(text, showAsMain = false) {
-	if (showAsMain) {
-		resetResults();
-	}
-
-	showLoading(true);
-
-	try {
-		const response = await window.api.extractKeywords({
-			text: text,
-			count: 10,
-			language: outputLanguage.value,
-		});
-
-		showLoading(false);
-
-		if (response.error) {
-			alert(`키워드 추출 오류: ${response.error}`);
-			return;
-		}
-
-		if (showAsMain) {
-			keywordsOnlyList.innerHTML = "";
-			response.keywords.forEach((keyword) => {
-				const keywordElement = document.createElement("span");
-				keywordElement.className = "keyword";
-				keywordElement.textContent = keyword;
-				keywordsOnlyList.appendChild(keywordElement);
-			});
-
-			resultContainer.classList.add("hidden");
-			keywordsContainer.classList.remove("hidden");
-		} else {
-			keywordsList.innerHTML = "";
-			keywordsList.classList.remove("empty-keywords");
-
-			response.keywords.forEach((keyword) => {
-				const keywordElement = document.createElement("span");
-				keywordElement.className = "keyword";
-				keywordElement.textContent = keyword;
-				keywordsList.appendChild(keywordElement);
-			});
-		}
-	} catch (error) {
-		showLoading(false);
-		alert(`키워드 추출 중 오류가 발생했습니다: ${error.message}`);
-	}
-}
-
 // 로딩 표시 함수
-function showLoading(show) {
+function showLoading(show, message = "처리 중...") {
+	const loadingMessage = loadingIndicator.querySelector("p");
+
 	if (show) {
+		loadingMessage.textContent = message;
 		loadingIndicator.classList.remove("hidden");
 		summarizeBtn.disabled = true;
-		extractKeywordsBtn.disabled = true;
+		document.body.style.overflow = "hidden"; // 배경 스크롤 방지
 	} else {
 		loadingIndicator.classList.add("hidden");
 		summarizeBtn.disabled = false;
-		extractKeywordsBtn.disabled = false;
+		document.body.style.overflow = ""; // 스크롤 복원
 	}
 }
 
@@ -489,9 +384,6 @@ function resetResults() {
 		<span class="keyword placeholder-keyword">예시</span>
 	`;
 	keywordsList.classList.add("empty-keywords");
-
-	// 키워드 전용 컨테이너 숨기기
-	keywordsContainer.classList.add("hidden");
 }
 
 // 결과 숨기기 함수 (더 이상 사용하지 않음)
