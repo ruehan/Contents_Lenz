@@ -224,4 +224,4 @@ MIT License
 
 ---
 
-© 2023 Contents Lenz
+© 2025 Contents Lenz
