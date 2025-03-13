@@ -264,23 +264,37 @@ async def scrape_url(
 
 @app.post("/summarize/url", response_model=SummaryResponse)
 async def summarize_url(
-    request: SummarizeUrlRequest
+    request: SummarizeUrlRequest = None,
+    url: str = Form(None),
+    length: str = Form("medium"),
+    format: str = Form("paragraph"),
+    language: str = Form("auto")
 ):
     """URL 콘텐츠 요약 API"""
+    # 디버깅 로그 추가
+    print(f"요약 요청 받음: request={request}, url={url}, length={length}, format={format}, language={language}")
+    
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
     
-    url = request.url
-    length = request.length
-    format = request.format
-    language = request.language
+    # JSON 요청과 Form 요청 모두 처리
+    if request:
+        url = request.url
+        length = request.length
+        format = request.format
+        language = request.language
+        print(f"JSON 요청 처리: url={url}, length={length}, format={format}, language={language}")
+    elif url is None:
+        print("URL이 제공되지 않음")
+        raise HTTPException(status_code=400, detail="URL이 제공되지 않았습니다.")
     
-    if not url.strip():
+    if not url or not url.strip():
+        print("URL이 비어있음")
         raise HTTPException(status_code=400, detail="요약할 URL을 입력하세요.")
     
     try:
         # 웹 콘텐츠 스크래핑
-        web_content = await scrape_url(ScrapeUrlRequest(url=url))
+        web_content = await scrape_url(url=url, use_ai_filter=True)
         text = f"제목: {web_content['title']}\n\n{web_content['content']}"
         
         # 언어 감지 (자동 모드인 경우)
@@ -309,18 +323,32 @@ async def summarize_url(
 
 @app.post("/summarize/text", response_model=SummaryResponse)
 async def summarize_text(
-    request: SummarizeTextRequest
+    request: SummarizeTextRequest = None,
+    text: str = Form(None),
+    length: str = Form("medium"),
+    format: str = Form("paragraph"),
+    language: str = Form("auto")
 ):
     """텍스트 요약 API"""
+    # 디버깅 로그 추가
+    print(f"텍스트 요약 요청 받음: request={request}, text 길이={len(text) if text else 0}, length={length}, format={format}, language={language}")
+    
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
     
-    text = request.text
-    length = request.length
-    format = request.format
-    language = request.language
+    # JSON 요청과 Form 요청 모두 처리
+    if request:
+        text = request.text
+        length = request.length
+        format = request.format
+        language = request.language
+        print(f"JSON 요청 처리: text 길이={len(text)}, length={length}, format={format}, language={language}")
+    elif text is None:
+        print("텍스트가 제공되지 않음")
+        raise HTTPException(status_code=400, detail="텍스트가 제공되지 않았습니다.")
     
-    if not text.strip():
+    if not text or not text.strip():
+        print("텍스트가 비어있음")
         raise HTTPException(status_code=400, detail="요약할 텍스트를 입력하세요.")
     
     # 언어 감지 (자동 모드인 경우)
@@ -409,17 +437,30 @@ async def summarize_file(
 
 @app.post("/keywords/text", response_model=KeywordsResponse)
 async def extract_keywords_text(
-    request: KeywordsRequest
+    request: KeywordsRequest = None,
+    text: str = Form(None),
+    count: int = Form(10),
+    language: str = Form("auto")
 ):
     """텍스트에서 키워드 추출 API"""
+    # 디버깅 로그 추가
+    print(f"키워드 추출 요청 받음: request={request}, text 길이={len(text) if text else 0}, count={count}, language={language}")
+    
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
     
-    text = request.text
-    count = request.count
-    language = request.language
+    # JSON 요청과 Form 요청 모두 처리
+    if request:
+        text = request.text
+        count = request.count
+        language = request.language
+        print(f"JSON 요청 처리: text 길이={len(text)}, count={count}, language={language}")
+    elif text is None:
+        print("텍스트가 제공되지 않음")
+        raise HTTPException(status_code=400, detail="텍스트가 제공되지 않았습니다.")
     
-    if not text.strip():
+    if not text or not text.strip():
+        print("텍스트가 비어있음")
         raise HTTPException(status_code=400, detail="키워드를 추출할 텍스트를 입력하세요.")
     
     try:
@@ -431,15 +472,26 @@ async def extract_keywords_text(
 
 @app.post("/detect-language", response_model=LanguageResponse)
 async def detect_language(
-    request: LanguageDetectionRequest
+    request: LanguageDetectionRequest = None,
+    text: str = Form(None)
 ):
     """텍스트 언어 감지 API"""
+    # 디버깅 로그 추가
+    print(f"언어 감지 요청 받음: request={request}, text 길이={len(text) if text else 0}")
+    
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
     
-    text = request.text
+    # JSON 요청과 Form 요청 모두 처리
+    if request:
+        text = request.text
+        print(f"JSON 요청 처리: text 길이={len(text)}")
+    elif text is None:
+        print("텍스트가 제공되지 않음")
+        raise HTTPException(status_code=400, detail="텍스트가 제공되지 않았습니다.")
     
-    if not text.strip():
+    if not text or not text.strip():
+        print("텍스트가 비어있음")
         raise HTTPException(status_code=400, detail="언어를 감지할 텍스트를 입력하세요.")
     
     try:
