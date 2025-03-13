@@ -62,7 +62,7 @@ try:
 except ValueError as e:
     print(f"OpenAI API 초기화 오류: {str(e)}")
 
-@app.get("/")
+@app.get("/api")
 async def root():
     """API 루트 경로"""
     return {
