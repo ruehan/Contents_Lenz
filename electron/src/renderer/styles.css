@@ -52,22 +52,69 @@ body {
 	flex-direction: column;
 }
 
-.app-header h1 {
+.logo-container h1 {
 	font-size: 1.8rem;
-	font-weight: 700;
 	margin-bottom: 0.2rem;
 }
 
-.app-header p {
+.logo-container p {
 	font-size: 0.9rem;
 	opacity: 0.9;
 }
 
-.api-status {
-	font-size: 0.85rem;
-	padding: 0.5rem 1rem;
+/* 헤더 오른쪽 영역 */
+.header-right {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+/* 언어 선택기 */
+.language-selector {
+	position: relative;
+	margin-right: 1rem;
+}
+
+.language-selector select {
+	appearance: none;
 	background-color: rgba(255, 255, 255, 0.2);
-	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	color: white;
+	padding: 0.4rem 2rem 0.4rem 0.8rem;
+	font-size: 0.9rem;
+	cursor: pointer;
+	transition: var(--transition);
+}
+
+.language-selector select:hover {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.language-selector select:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.language-selector::after {
+	content: "\f0d7";
+	font-family: "Font Awesome 6 Free";
+	font-weight: 900;
+	position: absolute;
+	right: 0.8rem;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	color: white;
+}
+
+/* API 상태 */
+.api-status {
+	font-size: 0.9rem;
+	padding: 0.4rem 0.8rem;
+	background-color: rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+	display: inline-block;
 }
 
 /* 메인 콘텐츠 */

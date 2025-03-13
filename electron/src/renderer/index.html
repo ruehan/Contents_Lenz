@@ -14,7 +14,14 @@
 					<h1>Contents Lenz</h1>
 					<p>AI 기반 콘텐츠 요약 및 분석 도구</p>
 				</div>
-				<div id="apiStatus" class="api-status">API 상태: 확인 중...</div>
+				<div class="header-right">
+					<div class="language-selector">
+						<select id="languageSelector">
+							<!-- 언어 옵션은 스크립트에서 동적으로 생성됩니다 -->
+						</select>
+					</div>
+					<div id="apiStatus" class="api-status">API 상태: 확인 중...</div>
+				</div>
 			</header>
 
 			<main class="app-main">
@@ -174,5 +181,6 @@
 		</div>
 
 		<script src="renderer.js"></script>
+		<script src="i18n-renderer.js"></script>
 	</body>
 </html>
