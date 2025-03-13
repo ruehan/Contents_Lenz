@@ -211,28 +211,100 @@ body {
 	gap: 0.5rem;
 }
 
-.url-preview {
+.ai-filter-option {
 	margin-top: 1rem;
+	padding: 0.8rem;
+	background-color: #f8f9fa;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+}
+
+.checkbox-container {
+	display: flex;
+	align-items: center;
+	font-size: 0.95rem;
+	color: var(--text-color);
+	cursor: pointer;
+}
+
+.checkbox-container input {
+	margin-right: 0.5rem;
+}
+
+.ai-filter-info {
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--light-text);
+	padding-left: 1.5rem;
+}
+
+.ai-filter-info i {
+	color: var(--primary-color);
+	margin-right: 0.3rem;
+}
+
+.url-preview {
+	margin-top: 1.5rem;
 	padding: 1rem;
 	border: 1px solid var(--border-color);
-	border-radius: 4px;
-	max-height: 200px;
+	border-radius: 6px;
+	background-color: #f8f9fa;
+	max-height: 300px;
 	overflow-y: auto;
 }
 
+.url-preview-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.8rem;
+	border-bottom: 1px solid var(--border-color);
+	padding-bottom: 0.5rem;
+}
+
+.url-actions {
+	display: flex;
+	gap: 0.3rem;
+}
+
 .url-title {
-	font-size: 1rem;
-	font-weight: 600;
-	margin-bottom: 0.5rem;
-	color: var(--primary-color);
+	font-size: 1.1rem;
+	color: var(--text-color);
+	margin-bottom: 0;
 }
 
 .url-content {
 	font-size: 0.9rem;
-	color: var(--light-text);
 	line-height: 1.5;
-	max-height: 150px;
-	overflow-y: auto;
+	color: var(--light-text);
+	white-space: pre-line;
+}
+
+.url-content-edit {
+	width: 100%;
+}
+
+.url-content-edit textarea {
+	width: 100%;
+	min-height: 200px;
+	padding: 0.8rem;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	font-family: inherit;
+	resize: vertical;
+}
+
+.edit-help-text {
+	margin-top: 0.5rem;
+	font-size: 0.8rem;
+	color: var(--light-text);
+}
+
+.edit-help-text i {
+	color: var(--primary-color);
+	margin-right: 0.3rem;
 }
 
 /* 설정 패널 */

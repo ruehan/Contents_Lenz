@@ -74,7 +74,8 @@ async def root():
 
 @app.post("/scrape-url", response_model=WebContentResponse)
 async def scrape_url(
-    url: str = Form(...)
+    url: str = Form(...),
+    use_ai_filter: bool = Form(True)  # 기본값은 True로 설정
 ):
     """URL에서 웹 콘텐츠 스크래핑 API"""
     if not url.strip():
@@ -98,6 +99,44 @@ async def scrape_url(
         # 제목 추출
         title = soup.title.string if soup.title else "제목 없음"
         
+        # 기본적인 불필요 요소 제거 (스크립트, 스타일 등)
+        for element in soup.find_all(['script', 'style']):
+            element.decompose()
+        
+        # 전체 텍스트 추출
+        all_text = soup.get_text(separator='\n', strip=True)
+        
+        # OpenAI API를 사용하여 주요 내용 필터링 (use_ai_filter가 True이고 openai_client가 있는 경우)
+        if use_ai_filter and openai_client:
+            try:
+                filtered_content = openai_client.filter_web_content(all_text, title, url)
+                return {
+                    "title": title,
+                    "content": filtered_content,
+                    "url": url
+                }
+            except Exception as e:
+                print(f"AI 필터링 중 오류 발생: {str(e)}")
+                # AI 필터링 실패 시 기존 방식으로 대체
+                pass
+        
+        # AI 필터링을 사용하지 않거나 실패한 경우 기존 방식으로 처리
+        # 불필요한 요소 제거
+        for element in soup.find_all(['script', 'style', 'nav', 'footer', 'iframe', 'aside']):
+            element.decompose()
+            
+        # 광고, 사이드바, 관련 기사 등을 포함할 가능성이 높은 요소 제거
+        ad_classes = ['ad', 'ads', 'advertisement', 'banner', 'sidebar', 'related', 'footer', 'menu', 'nav', 'share', 'social', 'comment', 'copyright']
+        for class_name in ad_classes:
+            for element in soup.find_all(class_=lambda x: x and any(ad in x.lower() for ad in [class_name])):
+                element.decompose()
+                
+        # 광고, 사이드바, 관련 기사 등을 포함할 가능성이 높은 ID 제거
+        ad_ids = ['ad', 'ads', 'advertisement', 'banner', 'sidebar', 'related', 'footer', 'menu', 'nav', 'share', 'social', 'comment', 'copyright']
+        for id_name in ad_ids:
+            for element in soup.find_all(id=lambda x: x and any(ad in x.lower() for ad in [id_name])):
+                element.decompose()
+        
         # 본문 추출 (메타 설명, 주요 텍스트 블록)
         content = ""
         
@@ -106,14 +145,68 @@ async def scrape_url(
         if meta_desc and meta_desc.get('content'):
             content += meta_desc.get('content') + "\n\n"
         
-        # 주요 콘텐츠 추출 (p, h1-h6, article, section 태그 등)
-        for tag in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'section']):
-            text = tag.get_text(strip=True)
-            if text and len(text) > 20:  # 짧은 텍스트는 건너뜀
-                content += text + "\n\n"
+        # 주요 콘텐츠 추출 시도 (article, main, section 등 주요 콘텐츠 영역)
+        main_content = None
+        for container in ['article', 'main', '.article', '.content', '.post', '.entry', '#article', '#content', '#main']:
+            if container.startswith('.') or container.startswith('#'):
+                selector_type = 'class' if container.startswith('.') else 'id'
+                selector_value = container[1:]
+                if selector_type == 'class':
+                    main_content = soup.find(class_=selector_value)
+                else:
+                    main_content = soup.find(id=selector_value)
+            else:
+                main_content = soup.find(container)
+                
+            if main_content:
+                break
+        
+        # 주요 콘텐츠 영역이 발견된 경우
+        if main_content:
+            # 주요 콘텐츠 내에서 텍스트 추출
+            for tag in main_content.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                text = tag.get_text(strip=True)
+                if text and len(text) > 20:  # 짧은 텍스트는 건너뜀
+                    content += text + "\n\n"
+        else:
+            # 주요 콘텐츠 영역을 찾지 못한 경우 일반적인 방법으로 추출
+            for tag in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
+                text = tag.get_text(strip=True)
+                if text and len(text) > 20:  # 짧은 텍스트는 건너뜀
+                    content += text + "\n\n"
         
         # 콘텐츠 정리 (중복 줄바꿈 제거 등)
         content = re.sub(r'\n{3,}', '\n\n', content).strip()
+        
+        # 불필요한 문자열 패턴 제거 (저작권 정보, 광고 문구 등)
+        patterns_to_remove = [
+            r'ⓒ.*All Rights Reserved',
+            r'무단 전재 및 재배포 금지',
+            r'Copyright ©.*',
+            r'관련기사',
+            r'관련 기사',
+            r'관련 뉴스',
+            r'.*\[.*\]$',  # [카메라 워크 K]와 같은 패턴
+            r'^외눈박이의.*',  # "외눈박이의 누드 사진"과 같은 패턴
+            r'^family site.*',
+            r'^문화·교육.*',
+        ]
+        
+        for pattern in patterns_to_remove:
+            content = re.sub(pattern, '', content, flags=re.MULTILINE)
+        
+        # 여러 줄 공백 정리
+        content = re.sub(r'\n\s*\n', '\n\n', content)
+        
+        # 중복 문단 제거
+        lines = content.split('\n\n')
+        unique_lines = []
+        for line in lines:
+            line = line.strip()
+            if line and line not in unique_lines:
+                unique_lines.append(line)
+        
+        content = '\n\n'.join(unique_lines)
         
         if not content:
             raise HTTPException(status_code=400, detail="웹 페이지에서 콘텐츠를 추출할 수 없습니다.")

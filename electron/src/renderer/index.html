@@ -50,9 +50,34 @@
 									<input type="text" id="inputUrl" placeholder="https://example.com" />
 									<button id="fetchUrlBtn" class="secondary-button"><i class="fas fa-download"></i> 가져오기</button>
 								</div>
-								<div id="urlPreview" class="url-preview hidden">
+							</div>
+							<div class="ai-filter-option">
+								<label class="checkbox-container">
+									<input type="checkbox" id="useAiFilter" checked />
+									<span class="checkmark"></span>
+									AI 필터링 사용 (주요 내용만 추출)
+								</label>
+								<div class="ai-filter-info"><i class="fas fa-info-circle"></i> AI 필터링은 광고, 관련 기사, 메뉴 등 불필요한 콘텐츠를 자동으로 제거합니다.</div>
+							</div>
+							<div id="urlPreview" class="url-preview hidden">
+								<div class="url-preview-header">
 									<h4 id="urlTitle" class="url-title"></h4>
-									<div id="urlContent" class="url-content"></div>
+									<div class="url-actions">
+										<button id="editContentBtn" class="icon-button" title="콘텐츠 편집">
+											<i class="fas fa-edit"></i>
+										</button>
+										<button id="saveContentBtn" class="icon-button hidden" title="편집 저장">
+											<i class="fas fa-save"></i>
+										</button>
+										<button id="cancelEditBtn" class="icon-button hidden" title="편집 취소">
+											<i class="fas fa-times"></i>
+										</button>
+									</div>
+								</div>
+								<div id="urlContent" class="url-content"></div>
+								<div id="urlContentEdit" class="url-content-edit hidden">
+									<textarea id="urlContentEditArea"></textarea>
+									<div class="edit-help-text"><i class="fas fa-info-circle"></i> 불필요한 광고, 관련 기사 등을 제거하여 요약 품질을 높일 수 있습니다.</div>
 								</div>
 							</div>
 						</div>

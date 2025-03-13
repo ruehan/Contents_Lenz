@@ -318,4 +318,64 @@ class OpenAIClient:
         
         except Exception as e:
             print(f"언어 감지 중 오류가 발생했습니다: {str(e)}")
-            return "en"  # 오류 발생 시 기본값은 영어로 변경 
+            return "en"  # 오류 발생 시 기본값은 영어로 변경
+    
+    def filter_web_content(self, text, title, url):
+        """웹 스크래핑 콘텐츠에서 주요 내용만 필터링
+        
+        Args:
+            text (str): 필터링할 원본 텍스트
+            title (str): 웹 페이지 제목
+            url (str): 웹 페이지 URL
+            
+        Returns:
+            str: 필터링된 텍스트
+        """
+        if not text:
+            return "필터링할 콘텐츠가 없습니다."
+        
+        # 텍스트가 너무 길면 토큰 제한에 걸릴 수 있으므로 적절히 잘라냄
+        # 약 8000자 정도로 제한 (GPT-4o-mini의 토큰 제한 고려)
+        if len(text) > 8000:
+            text = text[:8000]
+        
+        prompt = f"""
+        다음은 '{url}' 웹사이트에서 스크래핑한 콘텐츠입니다. 제목은 '{title}'입니다.
+        이 콘텐츠에서 주요 내용만 추출하고, 다음과 같은 불필요한 요소를 모두 제거해주세요:
+        
+        1. 광고 및 프로모션 내용
+        2. 관련 기사 링크 및 제목
+        3. 저작권 정보 및 면책 조항
+        4. 메뉴, 네비게이션, 사이드바 요소
+        5. 소셜 미디어 공유 버튼 관련 텍스트
+        6. 댓글 섹션 및 사용자 피드백
+        7. 구독 유도 문구
+        8. 웹사이트 푸터 정보
+        9. "외눈박이의 누드 사진", "[카메라 워크 K]" 등 본문과 관련 없는 제목
+        10. "family site", "문화·교육" 등의 사이트 메뉴 항목
+        
+        원본 형식을 최대한 유지하되, 주요 내용만 깔끔하게 정리해주세요.
+        단락 구분과 줄바꿈은 유지해주세요.
+        
+        콘텐츠:
+        {text}
+        """
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "당신은 웹 콘텐츠에서 주요 내용만 추출하는 전문가입니다. 불필요한 요소를 제거하고 핵심 내용만 깔끔하게 정리해주세요."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1500,
+                temperature=0.3,
+            )
+            
+            filtered_content = response.choices[0].message.content.strip()
+            return filtered_content
+        
+        except Exception as e:
+            print(f"콘텐츠 필터링 중 오류가 발생했습니다: {str(e)}")
+            # 오류 발생 시 원본 텍스트 반환
+            return text 
