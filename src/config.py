@@ -57,7 +57,23 @@ SUPPORTED_LANGUAGES = {
     "nl": "네덜란드어 (Nederlands)",
     "ar": "아랍어 (العربية)",
     "hi": "힌디어 (हिन्दी)",
-    "vi": "베트남어 (Tiếng Việt)"
+    "vi": "베트남어 (Tiếng Việt)",
+    "th": "태국어 (ภาษาไทย)",
+    "id": "인도네시아어 (Bahasa Indonesia)",
+    "tr": "터키어 (Türkçe)",
+    "pl": "폴란드어 (Polski)",
+    "sv": "스웨덴어 (Svenska)",
+    "da": "덴마크어 (Dansk)",
+    "fi": "핀란드어 (Suomi)",
+    "no": "노르웨이어 (Norsk)",
+    "cs": "체코어 (Čeština)",
+    "hu": "헝가리어 (Magyar)",
+    "el": "그리스어 (Ελληνικά)",
+    "he": "히브리어 (עברית)",
+    "ro": "루마니아어 (Română)",
+    "uk": "우크라이나어 (Українська)",
+    "fa": "페르시아어 (فارسی)",
+    "ms": "말레이어 (Bahasa Melayu)"
 }
 
 # 파일 형식 설정

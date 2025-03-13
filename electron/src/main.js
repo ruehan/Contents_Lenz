@@ -10,6 +10,7 @@ const store = new Store();
 
 // API 서버 URL (고정)
 const API_URL = "https://contents-lenz.onrender.com";
+// const API_URL = "http://localhost:8000";
 
 // 개발 모드 확인
 const isDev = process.argv.includes("--dev");
@@ -67,25 +68,98 @@ app.on("window-all-closed", () => {
 // API 상태 확인
 ipcMain.handle("get-config", async () => {
 	try {
+		console.log("API 연결 확인 중:", API_URL);
 		const response = await axios.get(`${API_URL}/`);
+		console.log("API 연결 성공:", response.data);
 		return response.data;
 	} catch (error) {
-		console.error("API 연결 확인 오류:", error);
+		console.error("API 연결 확인 오류:", error.message);
+		return { error: error.message || "API 서버에 연결할 수 없습니다." };
+	}
+});
+
+// 웹 스크래핑 API
+ipcMain.handle("scrape-url", async (event, { url, use_ai_filter }) => {
+	if (!url) {
+		return { error: "URL이 제공되지 않았습니다." };
+	}
+
+	try {
+		// URL 유효성 검사
+		if (!url.startsWith("http://") && !url.startsWith("https://")) {
+			url = "https://" + url;
+		}
+
+		// API 서버 엔드포인트 URL
+		const apiUrl = `${API_URL}/scrape-url`;
+		console.log("API 요청 URL:", apiUrl);
+		console.log("요청 데이터:", { url, use_ai_filter });
+
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("url", url);
+		params.append("use_ai_filter", use_ai_filter !== false);
+
+		// API 요청 전송
+		const response = await axios.post(apiUrl, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+		});
+
+		console.log("API 응답:", response.status);
+		return response.data;
+	} catch (error) {
+		console.error("URL 스크래핑 오류:", error);
+		if (error.response) {
+			console.error("오류 응답:", error.response.status, error.response.data);
+			return { error: error.response.data.detail || error.message };
+		}
 		return { error: error.message };
+	}
+});
+
+// URL 요약 API
+ipcMain.handle("summarize-url", async (event, { url, length, format, language }) => {
+	if (!url) {
+		return { error: "URL이 제공되지 않았습니다." };
+	}
+
+	try {
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("url", url);
+		params.append("length", length || "medium");
+		params.append("format", format || "paragraph");
+		params.append("language", language || "auto");
+
+		const response = await axios.post(`${API_URL}/summarize/url`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+		});
+
+		return response.data;
+	} catch (error) {
+		console.error("URL 요약 오류:", error);
+		return { error: error.response?.data?.detail || error.message };
 	}
 });
 
 // 텍스트 요약 API
 ipcMain.handle("summarize-text", async (event, { text, length, format, language }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
-		formData.append("length", length);
-		formData.append("format", format);
-		formData.append("language", language);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
+		params.append("length", length);
+		params.append("format", format);
+		params.append("language", language);
 
-		const response = await axios.post(`${API_URL}/summarize/text`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/summarize/text`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;
@@ -118,13 +192,16 @@ ipcMain.handle("summarize-file", async (event, { filePath, length, format, langu
 // 키워드 추출 API
 ipcMain.handle("extract-keywords", async (event, { text, count, language }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
-		formData.append("count", count);
-		formData.append("language", language);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
+		params.append("count", count);
+		params.append("language", language);
 
-		const response = await axios.post(`${API_URL}/keywords/text`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/keywords/text`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;
@@ -137,11 +214,14 @@ ipcMain.handle("extract-keywords", async (event, { text, count, language }) => {
 // 언어 감지 API
 ipcMain.handle("detect-language", async (event, { text }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
 
-		const response = await axios.post(`${API_URL}/detect-language`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/detect-language`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;
@@ -162,11 +242,7 @@ ipcMain.handle("select-file", async () => {
 		],
 	});
 
-	if (result.canceled) {
-		return { canceled: true };
-	}
-
-	return { filePath: result.filePaths[0] };
+	return { canceled: result.canceled, filePaths: result.filePaths };
 });
 
 // 저장 다이얼로그
