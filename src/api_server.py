@@ -104,19 +104,26 @@ async def scrape_url(
     use_ai_filter: bool = Form(True)
 ):
     """URL에서 웹 콘텐츠 스크래핑 API"""
+    # 디버깅 로그 추가
+    print(f"요청 받음: request={request}, url={url}, use_ai_filter={use_ai_filter}")
+    
     # JSON 요청과 Form 요청 모두 처리
     if request:
         url = request.url
         use_ai_filter = request.use_ai_filter
-    elif not url:
+        print(f"JSON 요청 처리: url={url}, use_ai_filter={use_ai_filter}")
+    elif url is None:
+        print("URL이 제공되지 않음")
         raise HTTPException(status_code=400, detail="URL이 제공되지 않았습니다.")
     
-    if not url.strip():
+    if not url or not url.strip():
+        print("URL이 비어있음")
         raise HTTPException(status_code=400, detail="스크래핑할 URL을 입력하세요.")
     
     # URL 형식 검증
     if not url.startswith(('http://', 'https://')):
         url = 'https://' + url
+        print(f"URL 형식 수정: {url}")
     
     try:
         # 웹 페이지 가져오기
