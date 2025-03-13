@@ -39,6 +39,31 @@ class WebContentResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
 
+# 요청 모델 정의
+class ScrapeUrlRequest(BaseModel):
+    url: str
+    use_ai_filter: bool = True
+
+class SummarizeUrlRequest(BaseModel):
+    url: str
+    length: str = "medium"
+    format: str = "paragraph"
+    language: str = "auto"
+
+class SummarizeTextRequest(BaseModel):
+    text: str
+    length: str = "medium"
+    format: str = "paragraph"
+    language: str = "auto"
+
+class KeywordsRequest(BaseModel):
+    text: str
+    count: int = 10
+    language: str = "auto"
+
+class LanguageDetectionRequest(BaseModel):
+    text: str
+
 # FastAPI 앱 초기화
 app = FastAPI(
     title="Contents Lenz API",
@@ -74,10 +99,18 @@ async def root():
 
 @app.post("/scrape-url", response_model=WebContentResponse)
 async def scrape_url(
-    url: str = Form(...),
-    use_ai_filter: bool = Form(True)  # 기본값은 True로 설정
+    request: ScrapeUrlRequest = None,
+    url: str = Form(None),
+    use_ai_filter: bool = Form(True)
 ):
     """URL에서 웹 콘텐츠 스크래핑 API"""
+    # JSON 요청과 Form 요청 모두 처리
+    if request:
+        url = request.url
+        use_ai_filter = request.use_ai_filter
+    elif not url:
+        raise HTTPException(status_code=400, detail="URL이 제공되지 않았습니다.")
+    
     if not url.strip():
         raise HTTPException(status_code=400, detail="스크래핑할 URL을 입력하세요.")
     
@@ -224,21 +257,23 @@ async def scrape_url(
 
 @app.post("/summarize/url", response_model=SummaryResponse)
 async def summarize_url(
-    url: str = Form(...),
-    length: str = Form("medium"),
-    format: str = Form("paragraph"),
-    language: str = Form("auto")
+    request: SummarizeUrlRequest
 ):
     """URL 콘텐츠 요약 API"""
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
+    
+    url = request.url
+    length = request.length
+    format = request.format
+    language = request.language
     
     if not url.strip():
         raise HTTPException(status_code=400, detail="요약할 URL을 입력하세요.")
     
     try:
         # 웹 콘텐츠 스크래핑
-        web_content = await scrape_url(url=url)
+        web_content = await scrape_url(ScrapeUrlRequest(url=url))
         text = f"제목: {web_content['title']}\n\n{web_content['content']}"
         
         # 언어 감지 (자동 모드인 경우)
@@ -267,14 +302,16 @@ async def summarize_url(
 
 @app.post("/summarize/text", response_model=SummaryResponse)
 async def summarize_text(
-    text: str = Form(...),
-    length: str = Form("medium"),
-    format: str = Form("paragraph"),
-    language: str = Form("auto")
+    request: SummarizeTextRequest
 ):
     """텍스트 요약 API"""
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
+    
+    text = request.text
+    length = request.length
+    format = request.format
+    language = request.language
     
     if not text.strip():
         raise HTTPException(status_code=400, detail="요약할 텍스트를 입력하세요.")
@@ -365,13 +402,15 @@ async def summarize_file(
 
 @app.post("/keywords/text", response_model=KeywordsResponse)
 async def extract_keywords_text(
-    text: str = Form(...),
-    count: int = Form(10),
-    language: str = Form("auto")
+    request: KeywordsRequest
 ):
     """텍스트에서 키워드 추출 API"""
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
+    
+    text = request.text
+    count = request.count
+    language = request.language
     
     if not text.strip():
         raise HTTPException(status_code=400, detail="키워드를 추출할 텍스트를 입력하세요.")
@@ -385,11 +424,13 @@ async def extract_keywords_text(
 
 @app.post("/detect-language", response_model=LanguageResponse)
 async def detect_language(
-    text: str = Form(...)
+    request: LanguageDetectionRequest
 ):
     """텍스트 언어 감지 API"""
     if not openai_client:
         raise HTTPException(status_code=500, detail="OpenAI API 키가 설정되지 않았습니다.")
+    
+    text = request.text
     
     if not text.strip():
         raise HTTPException(status_code=400, detail="언어를 감지할 텍스트를 입력하세요.")
