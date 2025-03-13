@@ -11,7 +11,7 @@ Contents Lenz는 GPT-4o Mini 모델을 활용한 콘텐츠 요약 및 분석 도
 - **콘텐츠 입력 및 로드**
 
   - 텍스트 직접 입력
-  - 파일 업로드 (TXT, DOCX)
+  - 파일 업로드 (TXT, PDF, DOCX, DOC)
   - URL 입력을 통한 웹 콘텐츠 스크래핑
 
 - **요약 기능**

@@ -211,6 +211,21 @@ body {
 	color: var(--light-text);
 }
 
+.file-format-info {
+	margin-top: 1rem;
+	font-size: 0.85rem;
+	color: var(--light-text);
+	background-color: #f0f0f0;
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	display: inline-block;
+}
+
+.file-format-info i {
+	color: var(--primary-color);
+	margin-right: 0.3rem;
+}
+
 /* URL 입력 */
 .url-input-container {
 	display: flex;
