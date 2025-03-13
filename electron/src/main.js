@@ -90,20 +90,32 @@ ipcMain.handle("scrape-url", async (event, { url, use_ai_filter }) => {
 			url = "https://" + url;
 		}
 
-		const formData = new FormData();
-		formData.append("url", url);
-		formData.append("use_ai_filter", use_ai_filter !== false); // 기본값은 true
+		// API 서버 엔드포인트 URL
+		const apiUrl = `${API_URL}/scrape-url`;
+		console.log("API 요청 URL:", apiUrl);
+		console.log("요청 데이터:", { url, use_ai_filter });
 
-		const response = await axios.post(`${API_URL}/scrape-url`, formData, {
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("url", url);
+		params.append("use_ai_filter", use_ai_filter !== false);
+
+		// API 요청 전송
+		const response = await axios.post(apiUrl, params, {
 			headers: {
-				...formData.getHeaders(),
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
 		});
 
+		console.log("API 응답:", response.status);
 		return response.data;
 	} catch (error) {
 		console.error("URL 스크래핑 오류:", error);
-		return { error: error.response?.data?.detail || error.message };
+		if (error.response) {
+			console.error("오류 응답:", error.response.status, error.response.data);
+			return { error: error.response.data.detail || error.message };
+		}
+		return { error: error.message };
 	}
 });
 
@@ -114,15 +126,16 @@ ipcMain.handle("summarize-url", async (event, { url, length, format, language })
 	}
 
 	try {
-		const formData = new FormData();
-		formData.append("url", url);
-		formData.append("length", length || "medium");
-		formData.append("format", format || "paragraph");
-		formData.append("language", language || "auto");
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("url", url);
+		params.append("length", length || "medium");
+		params.append("format", format || "paragraph");
+		params.append("language", language || "auto");
 
-		const response = await axios.post(`${API_URL}/summarize/url`, formData, {
+		const response = await axios.post(`${API_URL}/summarize/url`, params, {
 			headers: {
-				...formData.getHeaders(),
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
 		});
 
@@ -136,14 +149,17 @@ ipcMain.handle("summarize-url", async (event, { url, length, format, language })
 // 텍스트 요약 API
 ipcMain.handle("summarize-text", async (event, { text, length, format, language }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
-		formData.append("length", length);
-		formData.append("format", format);
-		formData.append("language", language);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
+		params.append("length", length);
+		params.append("format", format);
+		params.append("language", language);
 
-		const response = await axios.post(`${API_URL}/summarize/text`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/summarize/text`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;
@@ -176,13 +192,16 @@ ipcMain.handle("summarize-file", async (event, { filePath, length, format, langu
 // 키워드 추출 API
 ipcMain.handle("extract-keywords", async (event, { text, count, language }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
-		formData.append("count", count);
-		formData.append("language", language);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
+		params.append("count", count);
+		params.append("language", language);
 
-		const response = await axios.post(`${API_URL}/keywords/text`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/keywords/text`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;
@@ -195,11 +214,14 @@ ipcMain.handle("extract-keywords", async (event, { text, count, language }) => {
 // 언어 감지 API
 ipcMain.handle("detect-language", async (event, { text }) => {
 	try {
-		const formData = new FormData();
-		formData.append("text", text);
+		// URL 인코딩된 폼 데이터 사용
+		const params = new URLSearchParams();
+		params.append("text", text);
 
-		const response = await axios.post(`${API_URL}/detect-language`, formData, {
-			headers: formData.getHeaders(),
+		const response = await axios.post(`${API_URL}/detect-language`, params, {
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
 		});
 
 		return response.data;

@@ -1,6 +1,6 @@
 {
 	"name": "contents-lenz-electron",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Contents Lenz - AI 기반 콘텐츠 요약 및 분석 도구",
 	"main": "src/main.js",
 	"scripts": {
