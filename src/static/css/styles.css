@@ -55,77 +55,79 @@ body {
 .app-header h1 {
 	font-size: 1.8rem;
 	font-weight: 700;
-	margin-bottom: 0.2rem;
+	margin: 0;
 }
 
 .app-header p {
 	font-size: 0.9rem;
-	opacity: 0.9;
+	margin: 0;
 }
 
 .api-status {
-	font-size: 0.85rem;
-	padding: 0.5rem 1rem;
+	font-size: 0.8rem;
 	background-color: rgba(255, 255, 255, 0.2);
+	padding: 0.3rem 0.8rem;
 	border-radius: 20px;
+	display: flex;
+	align-items: center;
 }
 
 /* 메인 콘텐츠 */
 .app-main {
 	flex: 1;
-	padding: 1.5rem;
+	padding: 2rem;
 }
 
 .main-content {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1.5rem;
-	height: 100%;
+	display: flex;
+	gap: 2rem;
 }
 
 .input-section,
 .output-section {
-	display: flex;
-	flex-direction: column;
+	flex: 1;
 	background-color: white;
 	border-radius: 8px;
 	box-shadow: var(--shadow);
-	overflow: hidden;
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
 }
 
 /* 탭 */
 .tabs {
 	display: flex;
-	background-color: #f8f9fa;
 	border-bottom: 1px solid var(--border-color);
 }
 
 .tab-button {
-	flex: 1;
-	padding: 1rem;
 	background: none;
 	border: none;
-	cursor: pointer;
+	padding: 0.8rem 1.2rem;
 	font-size: 0.9rem;
-	font-weight: 500;
+	cursor: pointer;
 	color: var(--light-text);
-	transition: var(--transition);
 	border-bottom: 2px solid transparent;
+	transition: var(--transition);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
 .tab-button:hover {
-	background-color: rgba(0, 0, 0, 0.03);
+	color: var(--primary-color);
 }
 
 .tab-button.active {
 	color: var(--primary-color);
 	border-bottom: 2px solid var(--primary-color);
-	background-color: white;
+	font-weight: 600;
 }
 
 .tab-content {
-	padding: 1.5rem;
-	flex: 1;
+	display: block;
+	padding: 1rem 0;
 }
 
 .hidden {
@@ -134,24 +136,24 @@ body {
 
 /* 폼 요소 */
 .form-group {
-	margin-bottom: 1.2rem;
+	margin-bottom: 1rem;
 }
 
 .form-group label {
 	display: block;
 	margin-bottom: 0.5rem;
 	font-weight: 500;
+	font-size: 0.9rem;
 	color: var(--text-color);
-	font-size: 0.95rem;
 }
 
 .form-group input,
 .form-group select {
 	width: 100%;
-	padding: 0.8rem 1rem;
+	padding: 0.8rem;
 	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	font-size: 0.95rem;
+	border-radius: 4px;
+	font-size: 0.9rem;
 	transition: var(--transition);
 }
 
@@ -160,70 +162,47 @@ body {
 .form-group textarea:focus {
 	outline: none;
 	border-color: var(--primary-color);
-	box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+	box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.2);
 }
 
 .form-group textarea {
 	width: 100%;
-	padding: 0.8rem 1rem;
+	padding: 0.8rem;
 	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	font-size: 0.95rem;
+	border-radius: 4px;
+	font-size: 0.9rem;
 	resize: vertical;
 	min-height: 150px;
 	font-family: inherit;
 	transition: var(--transition);
 }
 
+/* 셀렉트 박스 */
 .select-input {
-	width: 100%;
-	padding: 0.8rem 1rem;
-	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	font-size: 0.95rem;
-	background-color: white;
-	cursor: pointer;
-	transition: var(--transition);
+	appearance: none;
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 0.7rem center;
+	background-size: 1em;
+	padding-right: 2.5rem;
 }
 
 .select-input:focus {
-	outline: none;
-	border-color: var(--primary-color);
-	box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e44ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 /* 파일 업로드 */
 .file-upload-container {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 2rem;
-	border: 2px dashed var(--border-color);
-	border-radius: 8px;
-	background-color: #f8f9fa;
-	text-align: center;
+	gap: 1rem;
+	align-items: flex-start;
 }
 
 .selected-file {
-	margin-top: 1rem;
 	font-size: 0.9rem;
 	color: var(--light-text);
-}
-
-.file-format-info {
-	margin-top: 1rem;
-	font-size: 0.85rem;
-	color: var(--light-text);
-	background-color: #f0f0f0;
-	padding: 0.5rem 1rem;
-	border-radius: 4px;
-	display: inline-block;
-}
-
-.file-format-info i {
-	color: var(--primary-color);
-	margin-right: 0.3rem;
+	margin-top: 0.5rem;
 }
 
 /* URL 입력 */
@@ -346,15 +325,18 @@ body {
 
 /* 설정 패널 */
 .settings-panel {
-	padding: 1.5rem;
-	background-color: #f8f9fa;
-	border-top: 1px solid var(--border-color);
+	background-color: var(--light-bg);
+	padding: 1rem;
+	border-radius: 4px;
 }
 
 .settings-panel h3 {
 	font-size: 1rem;
+	font-weight: 600;
 	margin-bottom: 1rem;
-	color: var(--text-color);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
 .settings-grid {
@@ -363,28 +345,29 @@ body {
 	gap: 1rem;
 }
 
-/* 버튼 */
+/* 버튼 컨테이너 */
 .button-container {
 	display: flex;
-	gap: 1rem;
-	padding: 1.5rem;
-	border-top: 1px solid var(--border-color);
+	justify-content: center;
+	margin-top: 1rem;
 }
 
+/* 기본 버튼 */
 .primary-button {
-	padding: 0.8rem 1.5rem;
 	background-color: var(--primary-color);
 	color: white;
 	border: none;
-	border-radius: 6px;
-	font-size: 0.95rem;
-	font-weight: 500;
+	padding: 0.8rem 1.5rem;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	font-weight: 600;
 	cursor: pointer;
 	transition: var(--transition);
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	gap: 0.5rem;
+	justify-content: center;
+	min-width: 120px;
 }
 
 .primary-button:hover {
@@ -392,24 +375,25 @@ body {
 }
 
 .secondary-button {
+	background-color: var(--secondary-color);
+	color: white;
+	border: none;
 	padding: 0.8rem 1.2rem;
-	background-color: white;
-	color: var(--primary-color);
-	border: 1px solid var(--primary-color);
-	border-radius: 6px;
-	font-size: 0.95rem;
-	font-weight: 500;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	font-weight: 600;
 	cursor: pointer;
 	transition: var(--transition);
 	display: flex;
 	align-items: center;
-	justify-content: center;
 	gap: 0.5rem;
+	justify-content: center;
+	min-width: 120px;
 	white-space: nowrap;
 }
 
 .secondary-button:hover {
-	background-color: rgba(142, 68, 173, 0.1);
+	background-color: var(--secondary-dark);
 }
 
 .secondary-button i {
@@ -420,60 +404,60 @@ body {
 }
 
 .icon-button {
-	padding: 0.5rem;
 	background: none;
 	border: none;
 	color: var(--light-text);
 	font-size: 1rem;
 	cursor: pointer;
 	transition: var(--transition);
+	padding: 0.5rem;
 	border-radius: 4px;
 }
 
 .icon-button:hover {
 	color: var(--primary-color);
-	background-color: rgba(52, 152, 219, 0.1);
+	background-color: rgba(142, 68, 173, 0.1);
 }
 
 /* 로딩 인디케이터 */
 .loading-indicator {
-	position: fixed;
+	position: absolute;
 	top: 0;
 	left: 0;
-	width: 100%;
-	height: 100%;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(255, 255, 255, 0.8);
 	display: flex;
-	flex-direction: column;
-	align-items: center;
 	justify-content: center;
-	background-color: rgba(0, 0, 0, 0.5);
-	z-index: 1000;
+	align-items: center;
+	z-index: 10;
+	border-radius: 8px;
 }
 
 .loading-modal {
 	background-color: white;
-	border-radius: 8px;
 	padding: 2rem;
+	border-radius: 8px;
 	box-shadow: var(--shadow);
-	text-align: center;
-	max-width: 300px;
-	width: 90%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
 }
 
 .spinner {
 	width: 40px;
 	height: 40px;
-	border: 3px solid rgba(142, 68, 173, 0.2);
-	border-top: 3px solid var(--primary-color);
+	border: 4px solid rgba(142, 68, 173, 0.1);
 	border-radius: 50%;
+	border-top-color: var(--primary-color);
 	animation: spin 1s linear infinite;
-	margin: 0 auto 1rem;
 }
 
 .loading-indicator p {
+	font-size: 0.9rem;
 	color: var(--text-color);
 	font-weight: 500;
-	margin: 0;
 }
 
 @keyframes spin {
@@ -485,30 +469,28 @@ body {
 	}
 }
 
-/* 결과 컨테이너 */
+/* 결과 섹션 */
 .output-section {
-	display: flex;
-	flex-direction: column;
+	position: relative;
 }
 
 .result-container {
 	display: flex;
 	flex-direction: column;
-	flex: 1;
+	gap: 1rem;
 }
 
 .result-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 1rem 1.5rem;
 	border-bottom: 1px solid var(--border-color);
-	background-color: #f8f9fa;
+	padding-bottom: 0.8rem;
 }
 
 .result-header h3 {
 	font-size: 1rem;
-	color: var(--text-color);
+	font-weight: 600;
 }
 
 .result-actions {
@@ -517,41 +499,45 @@ body {
 }
 
 .detected-language {
-	padding: 0.5rem 1.5rem;
-	font-size: 0.85rem;
+	font-size: 0.8rem;
 	color: var(--light-text);
-	background-color: #f8f9fa;
-	border-bottom: 1px solid var(--border-color);
+	background-color: var(--light-bg);
+	padding: 0.3rem 0.8rem;
+	border-radius: 20px;
+	display: inline-block;
+	margin-bottom: 0.5rem;
 }
 
 .result-content {
-	padding: 1.5rem;
-	line-height: 1.7;
+	padding: 1rem;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	min-height: 200px;
+	max-height: 400px;
 	overflow-y: auto;
-	flex: 1;
+	line-height: 1.6;
+	font-size: 0.95rem;
 }
 
 .empty-content {
 	display: flex;
-	align-items: center;
 	justify-content: center;
+	align-items: center;
 	color: var(--light-text);
-	font-style: italic;
-	background-color: rgba(0, 0, 0, 0.02);
-	border-radius: 6px;
+	text-align: center;
+	padding: 2rem;
 }
 
 .placeholder-text {
-	text-align: center;
-	max-width: 80%;
+	max-width: 300px;
+	font-size: 0.9rem;
 }
 
 /* 키워드 섹션 */
 .keywords-section {
+	margin-top: 1rem;
+	padding-top: 1rem;
 	border-top: 1px solid var(--border-color);
-	background-color: #f8f9fa;
-	padding: 0.5rem 1.5rem 1rem;
-	margin-top: auto;
 }
 
 .keywords-header {
@@ -560,15 +546,16 @@ body {
 
 .keywords-header h4 {
 	font-size: 0.9rem;
-	color: var(--light-text);
-	font-weight: 500;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-/* 키워드 컨테이너 */
 .keywords-container {
 	display: flex;
 	flex-direction: column;
-	flex: 1;
+	gap: 1rem;
 }
 
 .keywords-list {
@@ -578,22 +565,21 @@ body {
 }
 
 .result-container .keywords-list {
-	padding: 0;
+	margin-top: 0.5rem;
 }
 
 .keywords-container .keywords-list {
-	padding: 1.5rem;
-	overflow-y: auto;
-	flex: 1;
+	margin-top: 0;
 }
 
 .keywords-list span {
-	padding: 0.4rem 0.8rem;
-	background-color: rgba(142, 68, 173, 0.1);
+	background-color: var(--light-bg);
 	color: var(--primary-color);
+	padding: 0.3rem 0.8rem;
 	border-radius: 20px;
-	font-size: 0.85rem;
+	font-size: 0.8rem;
 	font-weight: 500;
+	display: inline-block;
 }
 
 .empty-keywords {
@@ -601,39 +587,41 @@ body {
 }
 
 .placeholder-keyword {
-	background-color: rgba(142, 68, 173, 0.05);
-	color: var(--light-text);
-	border: 1px dashed rgba(142, 68, 173, 0.3);
+	background-color: rgba(142, 68, 173, 0.1) !important;
+	color: var(--light-text) !important;
 }
 
 /* 푸터 */
 .app-footer {
-	padding: 1rem;
-	text-align: center;
-	font-size: 0.85rem;
+	padding: 1rem 2rem;
+	background-color: var(--light-bg);
 	color: var(--light-text);
+	text-align: center;
+	font-size: 0.8rem;
 	border-top: 1px solid var(--border-color);
 }
 
-/* 반응형 디자인 */
+/* 반응형 */
 @media (max-width: 1200px) {
 	.main-content {
-		grid-template-columns: 1fr 1fr;
+		max-width: 900px;
+		margin: 0 auto;
 	}
 }
 
 @media (max-width: 992px) {
 	.main-content {
-		grid-template-columns: 1fr;
-		gap: 1rem;
+		flex-direction: column;
+		max-width: 600px;
+		margin: 0 auto;
 	}
 
 	.settings-grid {
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr;
 	}
 
 	.app-main {
-		padding: 1rem;
+		padding: 1.5rem;
 	}
 }
 
@@ -689,32 +677,33 @@ body {
 	}
 
 	.result-header {
-		padding: 0.8rem 1rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
 	}
 
 	.result-content {
-		padding: 1rem;
+		padding: 0.8rem;
 	}
 
 	.keywords-section {
-		padding: 0.5rem 1rem 1rem;
+		margin-top: 0.8rem;
+		padding-top: 0.8rem;
 	}
 
 	.form-group label {
-		font-size: 0.9rem;
+		font-size: 0.8rem;
 	}
 
 	.form-group input,
 	.form-group select,
-	.form-group textarea,
-	.select-input {
-		padding: 0.7rem;
-		font-size: 0.9rem;
+	.form-group textarea {
+		padding: 0.6rem;
+		font-size: 0.8rem;
 	}
 
 	.primary-button,
 	.secondary-button {
-		padding: 0.7rem 1rem;
-		font-size: 0.9rem;
+		width: 100%;
 	}
 }

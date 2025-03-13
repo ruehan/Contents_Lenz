@@ -16,6 +16,12 @@ const fetchUrlBtn = document.getElementById("fetchUrlBtn");
 const urlPreview = document.getElementById("urlPreview");
 const urlTitle = document.getElementById("urlTitle");
 const urlContent = document.getElementById("urlContent");
+const editContentBtn = document.getElementById("editContentBtn");
+const saveContentBtn = document.getElementById("saveContentBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const urlContentEdit = document.getElementById("urlContentEdit");
+const urlContentEditArea = document.getElementById("urlContentEditArea");
+const useAiFilter = document.getElementById("useAiFilter");
 
 // 요약 설정 요소
 const summaryLength = document.getElementById("summaryLength");
@@ -149,6 +155,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await window.api.saveResult(currentResult);
 		}
 	});
+
+	// 콘텐츠 편집 버튼 이벤트
+	editContentBtn.addEventListener("click", () => {
+		// 편집 모드 활성화
+		urlContentEditArea.value = scrapedContent;
+		urlContent.classList.add("hidden");
+		urlContentEdit.classList.remove("hidden");
+		editContentBtn.classList.add("hidden");
+		saveContentBtn.classList.remove("hidden");
+		cancelEditBtn.classList.remove("hidden");
+	});
+
+	// 편집 저장 버튼 이벤트
+	saveContentBtn.addEventListener("click", () => {
+		// 편집된 콘텐츠 저장
+		scrapedContent = urlContentEditArea.value;
+		urlContent.textContent = scrapedContent;
+
+		// 편집 모드 비활성화
+		urlContent.classList.remove("hidden");
+		urlContentEdit.classList.add("hidden");
+		editContentBtn.classList.remove("hidden");
+		saveContentBtn.classList.add("hidden");
+		cancelEditBtn.classList.add("hidden");
+	});
+
+	// 편집 취소 버튼 이벤트
+	cancelEditBtn.addEventListener("click", () => {
+		// 편집 모드 비활성화
+		urlContent.classList.remove("hidden");
+		urlContentEdit.classList.add("hidden");
+		editContentBtn.classList.remove("hidden");
+		saveContentBtn.classList.add("hidden");
+		cancelEditBtn.classList.add("hidden");
+	});
 });
 
 // URL 콘텐츠 가져오기 함수
@@ -163,7 +204,10 @@ async function fetchUrlContent() {
 	showLoading(true, "웹 페이지 콘텐츠를 가져오는 중...");
 
 	try {
-		const response = await window.api.scrapeUrl({ url });
+		const response = await window.api.scrapeUrl({
+			url,
+			use_ai_filter: useAiFilter.checked,
+		});
 		showLoading(false);
 
 		if (response.error) {
@@ -176,6 +220,13 @@ async function fetchUrlContent() {
 		urlPreview.classList.remove("hidden");
 		scrapedContent = response.content;
 		currentUrl = url;
+
+		// 편집 모드 초기화
+		urlContentEdit.classList.add("hidden");
+		urlContent.classList.remove("hidden");
+		editContentBtn.classList.remove("hidden");
+		saveContentBtn.classList.add("hidden");
+		cancelEditBtn.classList.add("hidden");
 	} catch (error) {
 		showLoading(false);
 		alert(`URL 콘텐츠 가져오기 중 오류가 발생했습니다: ${error.message}`);

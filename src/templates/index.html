@@ -4,7 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Contents Lenz</title>
-		<link rel="stylesheet" href="styles.css" />
+		<link rel="stylesheet" href="/static/css/styles.css" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 	</head>
 	<body>
@@ -35,11 +35,11 @@
 
 						<div id="fileInputTab" class="tab-content hidden">
 							<div class="file-upload-container">
-								<button id="selectFileBtn" class="primary-button"><i class="fas fa-file-upload"></i> 파일 선택</button>
-								<div id="selectedFile" class="selected-file">선택된 파일 없음</div>
-								<div class="file-format-info">
-									<p><i class="fas fa-info-circle"></i> 지원 형식: TXT, PDF, DOCX, DOC</p>
-								</div>
+								<form id="fileUploadForm" enctype="multipart/form-data">
+									<input type="file" id="fileInput" name="file" accept=".txt,.pdf,.docx,.doc" style="display: none" />
+									<button id="selectFileBtn" type="button" class="primary-button"><i class="fas fa-file-upload"></i> 파일 선택</button>
+									<div id="selectedFile" class="selected-file">선택된 파일 없음</div>
+								</form>
 							</div>
 						</div>
 
@@ -53,14 +53,14 @@
 										<span>가져오기</span>
 									</button>
 								</div>
-							</div>
-							<div class="ai-filter-option">
-								<label class="checkbox-container">
-									<input type="checkbox" id="useAiFilter" checked />
-									<span class="checkmark"></span>
-									<span>AI 필터링 사용 (주요 내용만 추출)</span>
-								</label>
-								<div class="ai-filter-info"><i class="fas fa-info-circle"></i> AI 필터링은 광고, 관련 기사, 메뉴 등 불필요한 콘텐츠를 자동으로 제거합니다.</div>
+								<div class="ai-filter-option">
+									<label class="checkbox-container">
+										<input type="checkbox" id="useAiFilter" checked />
+										<span class="checkmark"></span>
+										<span>AI 필터링 사용 (주요 내용만 추출)</span>
+									</label>
+									<div class="ai-filter-info"><i class="fas fa-info-circle"></i> AI 필터링은 광고, 관련 기사, 메뉴 등 불필요한 콘텐츠를 자동으로 제거합니다.</div>
+								</div>
 							</div>
 							<div id="urlPreview" class="url-preview hidden">
 								<div class="url-preview-header">
@@ -153,9 +153,6 @@
 							<div id="keywordsSection" class="keywords-section">
 								<div class="keywords-header">
 									<h4><i class="fas fa-tags"></i> 관련 키워드</h4>
-									<button id="copyKeywordsBtn" class="icon-button" title="키워드 복사">
-										<i class="fas fa-copy"></i>
-									</button>
 								</div>
 								<div id="keywordsList" class="keywords-list empty-keywords">
 									<span class="keyword placeholder-keyword">키워드</span>
@@ -173,6 +170,6 @@
 			</footer>
 		</div>
 
-		<script src="renderer.js"></script>
+		<script src="/static/js/web-app.js"></script>
 	</body>
 </html>

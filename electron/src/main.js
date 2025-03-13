@@ -79,7 +79,7 @@ ipcMain.handle("get-config", async () => {
 });
 
 // 웹 스크래핑 API
-ipcMain.handle("scrape-url", async (event, { url }) => {
+ipcMain.handle("scrape-url", async (event, { url, use_ai_filter }) => {
 	if (!url) {
 		return { error: "URL이 제공되지 않았습니다." };
 	}
@@ -92,6 +92,7 @@ ipcMain.handle("scrape-url", async (event, { url }) => {
 
 		const formData = new FormData();
 		formData.append("url", url);
+		formData.append("use_ai_filter", use_ai_filter !== false); // 기본값은 true
 
 		const response = await axios.post(`${API_URL}/scrape-url`, formData, {
 			headers: {
