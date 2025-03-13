@@ -209,6 +209,7 @@ body {
 .url-input-container {
 	display: flex;
 	gap: 0.5rem;
+	align-items: center;
 }
 
 .ai-filter-option {
@@ -217,6 +218,9 @@ body {
 	background-color: #f8f9fa;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
 .checkbox-container {
@@ -225,10 +229,22 @@ body {
 	font-size: 0.95rem;
 	color: var(--text-color);
 	cursor: pointer;
+	position: relative;
 }
 
 .checkbox-container input {
 	margin-right: 0.5rem;
+	vertical-align: middle;
+	width: auto;
+}
+
+.checkbox-container .checkmark {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.checkbox-container span {
+	vertical-align: middle;
 }
 
 .ai-filter-info {
@@ -362,7 +378,7 @@ body {
 	background-color: var(--secondary-color);
 	color: white;
 	border: none;
-	padding: 0.8rem 1.5rem;
+	padding: 0.8rem 1.2rem;
 	border-radius: 4px;
 	font-size: 0.9rem;
 	font-weight: 600;
@@ -373,10 +389,18 @@ body {
 	gap: 0.5rem;
 	justify-content: center;
 	min-width: 120px;
+	white-space: nowrap;
 }
 
 .secondary-button:hover {
 	background-color: var(--secondary-dark);
+}
+
+.secondary-button i {
+	font-size: 0.9rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .icon-button {
@@ -631,6 +655,15 @@ body {
 
 	.url-input-container {
 		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.url-input-container input {
+		margin-bottom: 0.5rem;
+	}
+
+	.secondary-button {
+		width: 100%;
 	}
 }
 
